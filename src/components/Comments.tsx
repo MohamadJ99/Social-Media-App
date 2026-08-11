@@ -32,7 +32,7 @@ const Comments = () => {
                <span className="text-gray-300">|</span>
                <span className="text-gray-500">5 Likes</span>
               </div>
-              <div className="">Replay</div>
+              <div className="">Reply</div>
               </div>
 
               </div>
