@@ -14,8 +14,8 @@ const UserInfoCard = ({ userId }: { userId: string }) => {
             {/* Bottom */}
             <div className="flex flex-col gap-4 text-gray-500">
                 <div className="flex items-center gap-2">
-                    <span className="text-xl text-black">Noor Hisham</span>
-                    <span className="text-sm">@noor991</span>
+                    <span className="text-xl text-black">Mohammad Jawad</span>
+                    <span className="text-sm">@mohammad991</span>
                 </div>
                 <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Culpa minus iste totam perspiciatis dolorem</p>
                 <div className="flex items-center gap-2">
