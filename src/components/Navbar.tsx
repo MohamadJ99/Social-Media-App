@@ -1,7 +1,6 @@
 import Link from "next/link";
 import MobileMenu from "./MobileMenu";
 import Image from "next/image";
-import { ClerkLoaded, ClerkLoading, Show, UserButton } from "@clerk/nextjs";
 
 const Navbar = () => {
     return (
@@ -36,38 +35,52 @@ const Navbar = () => {
                 </div>
 
             </div>
-            {/* RIGHT */}
-            <div className="w-[30%] flex items-center gap-4 xl:gap-8 justify-end ">
-                <ClerkLoading>
-                    <div
-                        className="ms-auto inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
-                        role="status"></div>
-                </ClerkLoading>
+          {/* RIGHT */}
+<div className="w-[30%] flex items-center gap-4 xl:gap-8 justify-end">
 
-                <ClerkLoaded>
-                    <Show when="signed-in">
-                       <div className="cursor-pointer">
-                        <Image src="/people.png" alt="" width={24} height={24}/>
-                       </div>
-                       <div className="cursor-pointer">
-                        <Image src="/messages.png" alt="" width={20} height={20}/>
-                       </div>
-                       <div className="cursor-pointer">
-                        <Image src="/notifications.png" alt="" width={20} height={20}/>
-                       </div>
-                       <UserButton/>
-                    </Show>
+  <div className="cursor-pointer">
+    <Image
+      src="/people.png"
+      alt=""
+      width={24}
+      height={24}
+    />
+  </div>
 
-                    <Show when="signed-out">
-                       <div className="flex items-center gap-2 text-sm">
-                         <Image src="/login.png" alt="" width={20} height={20}/>
-                         <Link href="/sign-in">Login/Register</Link>
-                       </div>
-                    </Show>
-                </ClerkLoaded>
+  <div className="cursor-pointer">
+    <Image
+      src="/messages.png"
+      alt=""
+      width={20}
+      height={20}
+    />
+  </div>
 
-                <MobileMenu />
-            </div>
+  <div className="cursor-pointer">
+    <Image
+      src="/notifications.png"
+      alt=""
+      width={20}
+      height={20}
+    />
+  </div>
+
+  <div className="flex items-center gap-2 text-sm">
+    <Image
+      src="/login.png"
+      alt=""
+      width={20}
+      height={20}
+    />
+
+    <Link href="/login">
+      Login/Register
+    </Link>
+  </div>
+
+  <MobileMenu />
+
+</div>
 
 
 

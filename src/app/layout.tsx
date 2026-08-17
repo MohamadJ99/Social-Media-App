@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import { ClerkProvider } from '@clerk/nextjs'
+
 
 
 const geistSans = Geist({
@@ -33,14 +33,12 @@ export default function RootLayout({
     >
      
         <body className="min-h-full flex flex-col">
-           <ClerkProvider>
           <div className="w-full bg-white px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
             <Navbar />
           </div>
           <div className="bg-white px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
             {children}
           </div>
-          </ClerkProvider>
         </body>
       
     </html>
