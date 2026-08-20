@@ -1,8 +1,11 @@
+"use client";
 import Link from "next/link";
 import MobileMenu from "./MobileMenu";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 const Navbar = () => {
+  const { user } = useAuth();
   return (
     <div className="h-24 flex items-center justify-between">
       {/* LEFT */}
@@ -65,24 +68,34 @@ const Navbar = () => {
           />
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <Image
-            src="/login.png"
-            alt=""
-            width={20}
-            height={20}
-          />
+        {user ? (
+          <Link
+            href={`/profile/${user.id}`}
+            className="flex items-center gap-2 text-sm"
+          >
+            <Image
+              src="/login.png"
+              alt="Profile"
+              width={24}
+              height={24}
+            />
 
-          <Link href="/login">
-            Login
+            <span>{user.name}</span>
           </Link>
+        ) : (
+          <div className="flex items-center gap-2 text-sm">
+            <Image
+              src="/login.png"
+              alt="Login"
+              width={20}
+              height={20}
+            />
 
-          <span>/</span>
-
-          <Link href="/register">
-            Register
-          </Link>
-        </div>
+            <Link href="/login">
+              Login/Register
+            </Link>
+          </div>
+        )}
 
         <MobileMenu />
 
