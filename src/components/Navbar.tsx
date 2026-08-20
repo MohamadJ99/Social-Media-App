@@ -3,9 +3,11 @@ import Link from "next/link";
 import MobileMenu from "./MobileMenu";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   return (
     <div className="h-24 flex items-center justify-between">
       {/* LEFT */}
@@ -69,19 +71,33 @@ const Navbar = () => {
         </div>
 
         {user ? (
-          <Link
-            href={`/profile/${user.id}`}
-            className="flex items-center gap-2 text-sm"
-          >
-            <Image
-              src="/login.png"
-              alt="Profile"
-              width={24}
-              height={24}
-            />
+          <div className="flex items-center gap-4">
 
-            <span>{user.name}</span>
-          </Link>
+            <Link
+              href={`/profile/${user.id}`}
+              className="flex items-center gap-2 text-sm"
+            >
+              <Image
+                src="/login.png"
+                alt="Profile"
+                width={24}
+                height={24}
+              />
+
+              <span>{user.name}</span>
+            </Link>
+
+            <button
+              onClick={async () => {
+                await logout();
+                router.push("/login");
+              }}
+              className="text-sm text-red-500 hover:text-red-600 cursor-pointer"
+            >
+              Logout
+            </button>
+
+          </div>
         ) : (
           <div className="flex items-center gap-2 text-sm">
             <Image
