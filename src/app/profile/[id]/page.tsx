@@ -2,9 +2,15 @@ import Feed from "@/components/Feed";
 import LeftMenu from "@/components/LeftMenu";
 import RightMenu from "@/components/RightMenu";
 import Image from "next/image";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-const ProfilePage = () => {
+const ProfilePage = async ({params}:{
+  params:Promise<{id:string}>
+}) => {
+
+  const { id } = await params;
   return (
+    <ProtectedRoute>
     <div className="flex gap-6 pt-6">
 
     <div className="hidden xl:block w-[20%]"><LeftMenu type="profile"/></div>
@@ -37,10 +43,11 @@ const ProfilePage = () => {
        <Feed/>
       </div>
     </div>
-    <div className="hidden lg:block w-[30%]"><RightMenu userId="test"/></div>
+    <div className="hidden lg:block w-[30%]"><RightMenu userId={id}/></div>
 
 
    </div>
+   </ProtectedRoute>
   )
 }
 

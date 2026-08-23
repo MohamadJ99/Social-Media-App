@@ -3,9 +3,11 @@ import Feed from "@/components/Feed";
 import LeftMenu from "@/components/LeftMenu";
 import RightMenu from "@/components/RightMenu";
 import Stories from "@/components/Stories";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function HomePage() {
   return (
+    <ProtectedRoute>
    <div className="flex gap-6 pt-6">
 
     <div className="hidden xl:block w-[20%]"><LeftMenu type="home"/></div>
@@ -20,5 +22,6 @@ export default function HomePage() {
 
 
    </div>
+   </ProtectedRoute>
   );
 }
