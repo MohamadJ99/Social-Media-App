@@ -18,7 +18,7 @@ type AuthContextType = {
     token: string | null;
     loading: boolean;
     login: (token: string, user: User) => void;
-    logout: () => void;
+    logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(
@@ -35,18 +35,57 @@ export const AuthProvider = ({
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
+        const getUser = async () => {
+            const storedToken = localStorage.getItem("token");
 
-        if (storedToken) {
+
+            if (!storedToken) {
+                setLoading(false);
+                return;
+            }
+
             setToken(storedToken);
-        }
 
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
 
-        setLoading(false);
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/user`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${storedToken}`,
+                            Accept: "application/json",
+                        },
+                    }
+                );
+
+
+                if (!response.ok) {
+                    throw new Error("Invalid token");
+                }
+
+                const data = await response.json();
+
+                setUser(data.user);
+
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify(data.user)
+                );
+            } catch (error) {
+                console.error("Authentication error:", error);
+
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+
+                setToken(null);
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        getUser();
     }, []);
 
     const login = (token: string, user: User) => {
@@ -60,13 +99,16 @@ export const AuthProvider = ({
     const logout = async () => {
         if (token) {
             try {
-                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/logout`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: "application/json",
-                    },
-                });
+                await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/logout`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: "application/json",
+                        },
+                    }
+                );
             } catch (error) {
                 console.error("Logout error:", error);
             }
