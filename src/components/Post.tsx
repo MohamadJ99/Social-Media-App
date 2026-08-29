@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Comments from "./Comments";
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/context/AuthContext";
+import { deletePost } from "@/api/posts";
 type PostType = {
   id: number;
   user_id: number;
@@ -19,6 +21,20 @@ type PostProps = {
 };
 
 const Post = ({ post }: PostProps) => {
+
+  const { user, token } = useAuth();
+
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deletePost(token!, post.id),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
+    },
+  });
 
   const imageUrl = post.image
     ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${post.image}`
@@ -46,12 +62,16 @@ const Post = ({ post }: PostProps) => {
 
         </div>
 
-        <Image
-          src="/more.png"
-          alt=""
-          width={16}
-          height={16}
-        />
+        {user?.id === post.user_id && (
+          <button
+            type="button"
+            onClick={() => deleteMutation.mutate()}
+            disabled={deleteMutation.isPending}
+            className="text-red-500 text-sm hover:text-red-700 disabled:opacity-50"
+          >
+            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+          </button>
+        )}
 
       </div>
 

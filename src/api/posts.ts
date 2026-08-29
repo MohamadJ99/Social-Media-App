@@ -41,3 +41,29 @@ export const getPosts = async (token: string) => {
 
   return data;
 };
+
+export const deletePost = async (
+  token: string,
+  postId: number
+) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/posts/${postId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Failed to delete post"
+    );
+  }
+
+  return data;
+};
