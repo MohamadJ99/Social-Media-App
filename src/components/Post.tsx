@@ -19,6 +19,11 @@ type PostProps = {
 };
 
 const Post = ({ post }: PostProps) => {
+
+  const imageUrl = post.image
+    ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${post.image}`
+    : null;
+
   return (
     <div className="flex flex-col gap-4">
 
@@ -54,11 +59,12 @@ const Post = ({ post }: PostProps) => {
       <div className="flex flex-col gap-4">
 
         {post.image && (
-          <div className="w-full min-h-96 relative">
+          <div className="relative w-full h-96">
             <Image
-              src={post.image}
+              src={imageUrl}
               alt=""
               fill
+              unoptimized
               className="object-cover rounded-md"
             />
           </div>

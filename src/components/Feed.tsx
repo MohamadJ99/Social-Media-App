@@ -8,7 +8,7 @@ import { getPosts } from "@/api/posts";
 type PostType = {
   id: number;
   user_id: number;
-  content: string;
+  content: string | null;
   image: string | null;
   created_at: string;
   user: {
