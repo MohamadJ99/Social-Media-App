@@ -2,13 +2,15 @@ import Image from "next/image";
 import Comments from "./Comments";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
-import { deletePost } from "@/api/posts";
+import { deletePost, likePost, unlikePost, } from "@/api/posts";
 type PostType = {
   id: number;
   user_id: number;
   content: string;
   image: string | null;
   created_at: string;
+  likes_count: number;
+  is_liked: boolean;
   user: {
     id: number;
     name: string;
@@ -28,6 +30,26 @@ const Post = ({ post }: PostProps) => {
 
   const deleteMutation = useMutation({
     mutationFn: () => deletePost(token!, post.id),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
+    },
+  });
+
+  const likeMutation = useMutation({
+    mutationFn: () => {
+      if (!token) {
+        throw new Error("You must be logged in");
+      }
+
+      if (post.is_liked) {
+        return unlikePost(token, post.id);
+      }
+
+      return likePost(token, post.id);
+    },
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -103,18 +125,24 @@ const Post = ({ post }: PostProps) => {
 
           <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl">
 
-            <Image
-              src="/like.png"
-              alt=""
-              width={16}
-              height={16}
-              className="cursor-pointer"
-            />
+            <button
+              type="button"
+              onClick={() => likeMutation.mutate()}
+              disabled={likeMutation.isPending}
+              className="cursor-pointer disabled:opacity-50"
+            >
+              <Image
+                src="/like.png"
+                alt="Like"
+                width={16}
+                height={16}
+              />
+            </button>
 
             <span className="text-gray-300">|</span>
 
             <span className="text-gray-500">
-              123{" "}
+              {post.likes_count}{" "}
               <span className="hidden md:inline">
                 Likes
               </span>

@@ -11,6 +11,8 @@ type PostType = {
   content: string | null;
   image: string | null;
   created_at: string;
+  likes_count: number;
+  is_liked: boolean;
   user: {
     id: number;
     name: string;
