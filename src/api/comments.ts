@@ -8,10 +8,16 @@ export type Comment = {
   id: number;
   post_id: number;
   user_id: number;
+  parent_id: number | null;
   content: string;
   created_at: string;
   updated_at: string;
+
+  likes_count: number;
+  is_liked: boolean;
+
   user: CommentUser;
+  replies?: Comment[];
 };
 
 type CommentsResponse = {
@@ -52,7 +58,8 @@ export const getComments = async (
 export const createComment = async (
   token: string,
   postId: number,
-  content: string
+  content: string,
+  parentId?: number
 ): Promise<CommentResponse> => {
   const response = await fetch(
     `${API_URL}/posts/${postId}/comments`,
@@ -62,7 +69,10 @@ export const createComment = async (
         ...getAuthHeaders(token),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({
+        content,
+        parent_id: parentId ?? null,
+      }),
     }
   );
 

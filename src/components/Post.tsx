@@ -196,7 +196,7 @@ const Post = ({ post }: PostProps) => {
 
       </div>
 
-      <Comments postId={post.id} postOwnerId={post.user_id} />
+      <Comments postId={post.id}/>
 
     </div>
   );
