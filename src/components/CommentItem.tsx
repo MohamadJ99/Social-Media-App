@@ -95,7 +95,13 @@ const CommentItem = ({
       );
     },
 
-    onSuccess: refreshComments,
+    onSuccess: () => {
+      refreshComments();
+      
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
+    }
   });
 
   // REPLY
@@ -117,6 +123,9 @@ const CommentItem = ({
       setReplyContent("");
       setShowReplyInput(false);
       refreshComments();
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
     },
   });
 

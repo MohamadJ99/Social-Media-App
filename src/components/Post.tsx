@@ -27,6 +27,7 @@ type PostType = {
   created_at: string;
 
   likes_count: number;
+  comments_count: number;
   is_liked: boolean;
 
   user: {
@@ -49,9 +50,9 @@ const Post = ({ post }: PostProps) => {
 
   const queryClient = useQueryClient();
 
-  // ====================
+
   // DELETE POST
-  // ====================
+
 
   const deleteMutation = useMutation({
     mutationFn: () => {
@@ -69,9 +70,9 @@ const Post = ({ post }: PostProps) => {
     },
   });
 
-  // ====================
+
   // LIKE / UNLIKE POST
-  // ====================
+
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -276,7 +277,7 @@ const Post = ({ post }: PostProps) => {
             </span>
 
             <span className="text-gray-500">
-              20{" "}
+              {post.comments_count}{" "}
               <span className="hidden md:inline">
                 Comments
               </span>

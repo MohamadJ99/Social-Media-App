@@ -55,6 +55,10 @@ const Comments = ({ postId }: CommentsProps) => {
       queryClient.invalidateQueries({
         queryKey: ["comments", postId],
       });
+
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
     },
   });
 
