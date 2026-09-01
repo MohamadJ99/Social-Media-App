@@ -1,5 +1,10 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+const getAuthHeaders = (token: string) => ({
+  Accept: "application/json",
+  Authorization: `Bearer ${token}`,
+});
+
 export const createPost = async (
   token: string,
   content: string,
@@ -14,7 +19,7 @@ export const createPost = async (
   }
   const response = await fetch(`${API_URL}/posts`, {
     method: "POST",
-    headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
+    headers: getAuthHeaders(token),
     body: formData,
   });
   const data = await response.json();
@@ -27,10 +32,7 @@ export const createPost = async (
 export const getPosts = async (token: string) => {
   const response = await fetch(`${API_URL}/posts`, {
     method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers: getAuthHeaders(token),
   });
 
   const data = await response.json();
@@ -42,15 +44,35 @@ export const getPosts = async (token: string) => {
   return data;
 };
 
+export const updatePost = async (
+  token: string,
+  postId: number,
+  content: string,
+) => {
+  const response = await fetch(`${API_URL}/posts/${postId}`, {
+    method: "PATCH",
+    headers: {
+      ...getAuthHeaders(token),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ content }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+
+    throw new Error(data?.message ?? "Failed to update post");
+  }
+
+  return response.json();
+};
+
 export const deletePost = async (token: string, postId: number) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/posts/${postId}`,
     {
       method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getAuthHeaders(token),
     },
   );
 
@@ -58,48 +80,6 @@ export const deletePost = async (token: string, postId: number) => {
 
   if (!response.ok) {
     throw new Error(data.message || "Failed to delete post");
-  }
-
-  return data;
-};
-
-export const likePost = async (token: string, postId: number) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/posts/${postId}/like`,
-    {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to like post");
-  }
-
-  return data;
-};
-
-export const unlikePost = async (token: string, postId: number) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/posts/${postId}/like`,
-    {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to unlike post");
   }
 
   return data;

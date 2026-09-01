@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Comments from "./Comments";
+import { useState } from "react";
 
 import {
   useMutation,
@@ -12,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 
 import {
   deletePost,
+  updatePost,
 } from "@/api/posts";
 
 import {
@@ -25,7 +27,6 @@ type PostType = {
   content: string;
   image: string | null;
   created_at: string;
-
   likes_count: number;
   comments_count: number;
   is_liked: boolean;
@@ -50,9 +51,36 @@ const Post = ({ post }: PostProps) => {
 
   const queryClient = useQueryClient();
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [content, setContent] = useState(post.content);
 
-  // DELETE POST
+  const isOwner = user?.id === post.user_id;
 
+  // Update post
+
+  const updateMutation = useMutation({
+    mutationFn: () => {
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      return updatePost(
+        token,
+        post.id,
+        content.trim()
+      );
+    },
+
+    onSuccess: () => {
+      setIsEditing(false);
+
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
+    },
+  });
+
+  // Delete post
 
   const deleteMutation = useMutation({
     mutationFn: () => {
@@ -70,9 +98,7 @@ const Post = ({ post }: PostProps) => {
     },
   });
 
-
-  // LIKE / UNLIKE POST
-
+  // Like / unlike post
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -107,24 +133,24 @@ const Post = ({ post }: PostProps) => {
           return {
             ...oldData,
 
-            posts: oldData.posts.map((currentPost) => {
-              if (currentPost.id !== post.id) {
-                return currentPost;
+            posts: oldData.posts.map(
+              (currentPost) => {
+                if (currentPost.id !== post.id) {
+                  return currentPost;
+                }
+
+                const newIsLiked =
+                  !currentPost.is_liked;
+
+                return {
+                  ...currentPost,
+                  is_liked: newIsLiked,
+                  likes_count:
+                    currentPost.likes_count +
+                    (newIsLiked ? 1 : -1),
+                };
               }
-
-              const newIsLiked =
-                !currentPost.is_liked;
-
-              return {
-                ...currentPost,
-
-                is_liked: newIsLiked,
-
-                likes_count:
-                  currentPost.likes_count +
-                  (newIsLiked ? 1 : -1),
-              };
-            }),
+            ),
           };
         }
       );
@@ -134,7 +160,11 @@ const Post = ({ post }: PostProps) => {
       };
     },
 
-    onError: (_error, _variables, context) => {
+    onError: (
+      _error,
+      _variables,
+      context
+    ) => {
       if (context?.previousPosts) {
         queryClient.setQueryData(
           ["posts"],
@@ -150,6 +180,26 @@ const Post = ({ post }: PostProps) => {
     },
   });
 
+  // Handlers
+
+  const handleUpdate = () => {
+    const trimmedContent = content.trim();
+
+    if (
+      !trimmedContent ||
+      updateMutation.isPending
+    ) {
+      return;
+    }
+
+    updateMutation.mutate();
+  };
+
+  const handleCancelEdit = () => {
+    setContent(post.content);
+    setIsEditing(false);
+  };
+
   const imageUrl = post.image
     ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${post.image}`
     : null;
@@ -157,7 +207,8 @@ const Post = ({ post }: PostProps) => {
   return (
     <div className="flex flex-col gap-4">
 
-      {/* USER */}
+      {/* User */}
+
       <div className="flex items-center justify-between">
 
         <div className="flex items-center gap-4">
@@ -176,25 +227,48 @@ const Post = ({ post }: PostProps) => {
 
         </div>
 
-        {user?.id === post.user_id && (
-          <button
-            type="button"
-            onClick={() =>
-              deleteMutation.mutate()
-            }
-            disabled={deleteMutation.isPending}
-            className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
-          >
-            {deleteMutation.isPending
-              ? "Deleting..."
-              : "Delete"}
-          </button>
+        {/* Owner actionser */}
+
+        {isOwner && (
+          <div className="flex items-center gap-3 text-sm">
+
+            {!isEditing && (
+              <button
+                type="button"
+                onClick={() =>
+                  setIsEditing(true)
+                }
+                className="text-blue-500 hover:text-blue-700"
+              >
+                Edit
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() =>
+                deleteMutation.mutate()
+              }
+              disabled={
+                deleteMutation.isPending ||
+                updateMutation.isPending
+              }
+              className="text-red-500 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {deleteMutation.isPending
+                ? "Deleting..."
+                : "Delete"}
+            </button>
+
+          </div>
         )}
 
       </div>
 
-      {/* CONTENT */}
+      {/* Content */}
+
       <div className="flex flex-col gap-4">
+
 
         {imageUrl && (
           <div className="relative h-96 w-full">
@@ -210,16 +284,66 @@ const Post = ({ post }: PostProps) => {
           </div>
         )}
 
-        <p>{post.content}</p>
+        {/* Edit */}
+
+        {isEditing ? (
+          <div className="flex flex-col gap-3">
+
+            <textarea
+              value={content}
+              onChange={(event) =>
+                setContent(event.target.value)
+              }
+              rows={4}
+              disabled={
+                updateMutation.isPending
+              }
+              className="w-full resize-none rounded-lg bg-slate-100 p-3 outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            />
+
+            <div className="flex items-center gap-4 text-sm">
+
+              <button
+                type="button"
+                onClick={handleUpdate}
+                disabled={
+                  !content.trim() ||
+                  updateMutation.isPending
+                }
+                className="font-medium text-blue-500 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {updateMutation.isPending
+                  ? "Updating..."
+                  : "Update"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                disabled={
+                  updateMutation.isPending
+                }
+                className="text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+            </div>
+
+          </div>
+        ) : (
+          <p>{post.content}</p>
+        )}
 
       </div>
 
-      {/* INTERACTION */}
+      {/* Interaction */}
+
       <div className="my-4 flex items-center justify-between text-sm">
 
         <div className="flex gap-8">
 
-          {/* LIKE */}
+          {/* Like */}
 
           <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-2">
 
@@ -228,7 +352,9 @@ const Post = ({ post }: PostProps) => {
               onClick={() =>
                 likeMutation.mutate()
               }
-              disabled={likeMutation.isPending}
+              disabled={
+                likeMutation.isPending
+              }
               className="cursor-pointer disabled:opacity-50"
             >
 
@@ -253,6 +379,7 @@ const Post = ({ post }: PostProps) => {
               }
             >
               {post.likes_count}{" "}
+
               <span className="hidden md:inline">
                 Likes
               </span>
@@ -260,7 +387,7 @@ const Post = ({ post }: PostProps) => {
 
           </div>
 
-          {/* COMMENTS */}
+          {/* Comments */}
 
           <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-2">
 
@@ -278,6 +405,7 @@ const Post = ({ post }: PostProps) => {
 
             <span className="text-gray-500">
               {post.comments_count}{" "}
+
               <span className="hidden md:inline">
                 Comments
               </span>
@@ -287,7 +415,7 @@ const Post = ({ post }: PostProps) => {
 
         </div>
 
-        {/* SHARE */}
+        {/* Share */}
 
         <div className="flex items-center gap-4 rounded-xl bg-slate-100 p-2">
 
@@ -305,6 +433,7 @@ const Post = ({ post }: PostProps) => {
 
           <span className="text-gray-500">
             4{" "}
+
             <span className="hidden md:inline">
               Shares
             </span>
@@ -313,6 +442,8 @@ const Post = ({ post }: PostProps) => {
         </div>
 
       </div>
+
+      {/* Comments */}
 
       <Comments postId={post.id} />
 
