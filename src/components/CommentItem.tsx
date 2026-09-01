@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { useAuth } from "@/context/AuthContext";
 
@@ -23,15 +26,18 @@ type CommentItemProps = {
   postId: number;
 };
 
-const CommentItem = ({ comment, postId }: CommentItemProps) => {
+const CommentItem = ({
+  comment,
+  postId,
+}: CommentItemProps) => {
   const { user, token } = useAuth();
   const queryClient = useQueryClient();
 
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(comment.content);
 
-  const [showReply, setShowReply] = useState(false);
-  const [reply, setReply] = useState("");
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
 
   const isOwner = user?.id === comment.user_id;
 
@@ -44,19 +50,31 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
   // LIKE
   const likeMutation = useMutation({
     mutationFn: () => {
-      if (comment.is_liked) {
-        return unlikeComment(token!, comment.id);
+      if (!token) {
+        throw new Error("Authentication required");
       }
 
-      return likeComment(token!, comment.id);
+      return comment.is_liked
+        ? unlikeComment(token, comment.id)
+        : likeComment(token, comment.id);
     },
+
     onSuccess: refreshComments,
   });
 
   // UPDATE
   const updateMutation = useMutation({
-    mutationFn: () =>
-      updateComment(token!, comment.id, content.trim()),
+    mutationFn: () => {
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      return updateComment(
+        token,
+        comment.id,
+        content.trim()
+      );
+    },
 
     onSuccess: () => {
       setIsEditing(false);
@@ -66,37 +84,54 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
 
   // DELETE
   const deleteMutation = useMutation({
-    mutationFn: () =>
-      deleteComment(token!, comment.id),
+    mutationFn: () => {
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      return deleteComment(
+        token,
+        comment.id
+      );
+    },
 
     onSuccess: refreshComments,
   });
 
   // REPLY
   const replyMutation = useMutation({
-    mutationFn: () =>
-      createComment(
-        token!,
+    mutationFn: () => {
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      return createComment(
+        token,
         postId,
-        reply.trim(),
+        replyContent.trim(),
         comment.id
-      ),
+      );
+    },
 
     onSuccess: () => {
-      setReply("");
-      setShowReply(false);
+      setReplyContent("");
+      setShowReplyInput(false);
       refreshComments();
     },
   });
 
   const handleUpdate = () => {
-    if (!content.trim()) return;
+    if (!content.trim()) {
+      return;
+    }
 
     updateMutation.mutate();
   };
 
   const handleReply = () => {
-    if (!reply.trim()) return;
+    if (!replyContent.trim()) {
+      return;
+    }
 
     replyMutation.mutate();
   };
@@ -105,11 +140,12 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
     <div className="flex flex-col gap-4">
 
       {/* COMMENT */}
+
       <div className="flex gap-4">
 
         <Image
           src="https://images.pexels.com/photos/30299053/pexels-photo-30299053.jpeg"
-          alt=""
+          alt={`${comment.user.name}'s profile`}
           width={40}
           height={40}
           className="h-10 w-10 rounded-full object-cover"
@@ -117,8 +153,9 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
 
         <div className="flex-1">
 
-          {/* USER */}
-          <div className="flex justify-between">
+          {/* HEADER */}
+
+          <div className="flex items-center justify-between">
 
             <span className="font-medium">
               {comment.user.name}
@@ -129,7 +166,10 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
 
                 {!isEditing && (
                   <button
-                    onClick={() => setIsEditing(true)}
+                    type="button"
+                    onClick={() =>
+                      setIsEditing(true)
+                    }
                     className="text-blue-500"
                   >
                     Edit
@@ -137,8 +177,13 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
                 )}
 
                 <button
-                  onClick={() => deleteMutation.mutate()}
-                  disabled={deleteMutation.isPending}
+                  type="button"
+                  onClick={() =>
+                    deleteMutation.mutate()
+                  }
+                  disabled={
+                    deleteMutation.isPending
+                  }
                   className="text-red-500 disabled:opacity-50"
                 >
                   {deleteMutation.isPending
@@ -152,22 +197,28 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
           </div>
 
           {/* CONTENT */}
+
           {isEditing ? (
             <div className="mt-2">
 
               <textarea
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={2}
-                className="w-full rounded-lg bg-slate-100 p-2 outline-none"
+                onChange={(e) =>
+                  setContent(e.target.value)
+                }
+                rows={3}
+                className="w-full rounded-lg bg-slate-100 p-3 outline-none"
               />
 
               <div className="mt-2 flex gap-3 text-xs">
 
                 <button
+                  type="button"
                   onClick={handleUpdate}
-                  disabled={updateMutation.isPending}
-                  className="text-blue-500"
+                  disabled={
+                    updateMutation.isPending
+                  }
+                  className="text-blue-500 disabled:opacity-50"
                 >
                   {updateMutation.isPending
                     ? "Updating..."
@@ -175,6 +226,7 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setContent(comment.content);
                     setIsEditing(false);
@@ -193,14 +245,23 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
             </p>
           )}
 
-          {/* ACTIONS */}
-          <div className="mt-3 flex gap-6 text-xs text-gray-500">
+          {/* INTERACTION */}
+
+          <div className="mt-3 flex items-center gap-6 text-xs text-gray-500">
+
+            {/* LIKE */}
 
             <button
-              onClick={() => likeMutation.mutate()}
-              disabled={likeMutation.isPending}
+              type="button"
+              onClick={() =>
+                likeMutation.mutate()
+              }
+              disabled={
+                likeMutation.isPending
+              }
               className="flex items-center gap-2 disabled:opacity-50"
             >
+
               <Image
                 src="/like.png"
                 alt="Like"
@@ -208,11 +269,27 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
                 height={16}
               />
 
-              {comment.likes_count} Likes
+              <span
+                className={
+                  comment.is_liked
+                    ? "text-blue-500"
+                    : ""
+                }
+              >
+                {comment.likes_count} Likes
+              </span>
+
             </button>
 
+            {/* REPLY */}
+
             <button
-              onClick={() => setShowReply(!showReply)}
+              type="button"
+              onClick={() =>
+                setShowReplyInput(
+                  !showReplyInput
+                )
+              }
               className="hover:text-gray-800"
             >
               Reply
@@ -221,26 +298,35 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
           </div>
 
           {/* REPLY INPUT */}
-          {showReply && (
+
+          {showReplyInput && (
             <div className="mt-3 flex gap-2">
 
               <input
-                value={reply}
-                onChange={(e) => setReply(e.target.value)}
+                type="text"
+                value={replyContent}
+                onChange={(e) =>
+                  setReplyContent(
+                    e.target.value
+                  )
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleReply();
                   }
                 }}
                 placeholder="Write a reply..."
-                disabled={replyMutation.isPending}
-                className="flex-1 rounded-lg bg-slate-100 px-3 py-2 text-sm outline-none"
+                disabled={
+                  replyMutation.isPending
+                }
+                className="flex-1 rounded-lg bg-slate-100 px-4 py-2 text-sm outline-none"
               />
 
               <button
+                type="button"
                 onClick={handleReply}
                 disabled={
-                  !reply.trim() ||
+                  !replyContent.trim() ||
                   replyMutation.isPending
                 }
                 className="text-sm text-blue-500 disabled:opacity-50"
@@ -258,19 +344,21 @@ const CommentItem = ({ comment, postId }: CommentItemProps) => {
       </div>
 
       {/* REPLIES */}
-      {(comment.replies ?? []).length > 0 && (
-        <div className="ml-12 flex flex-col gap-4">
 
-          {(comment.replies ??[]).map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              postId={postId}
-            />
-          ))}
+      {comment.replies &&
+        comment.replies.length > 0 && (
+          <div className="ml-12 flex flex-col gap-5">
 
-        </div>
-      )}
+            {comment.replies.map((reply) => (
+              <CommentItem
+                key={reply.id}
+                comment={reply}
+                postId={postId}
+              />
+            ))}
+
+          </div>
+        )}
 
     </div>
   );

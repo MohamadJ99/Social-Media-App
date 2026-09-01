@@ -1,16 +1,34 @@
+"use client";
+
 import Image from "next/image";
 import Comments from "./Comments";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import {
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+
 import { useAuth } from "@/context/AuthContext";
-import { deletePost, likePost, unlikePost, } from "@/api/posts";
+
+import {
+  deletePost,
+} from "@/api/posts";
+
+import {
+  likePost,
+  unlikePost,
+} from "@/api/likes";
+
 type PostType = {
   id: number;
   user_id: number;
   content: string;
   image: string | null;
   created_at: string;
+
   likes_count: number;
   is_liked: boolean;
+
   user: {
     id: number;
     name: string;
@@ -18,18 +36,31 @@ type PostType = {
   };
 };
 
+type PostsResponse = {
+  posts: PostType[];
+};
+
 type PostProps = {
   post: PostType;
 };
 
 const Post = ({ post }: PostProps) => {
-
   const { user, token } = useAuth();
 
   const queryClient = useQueryClient();
 
+  // ====================
+  // DELETE POST
+  // ====================
+
   const deleteMutation = useMutation({
-    mutationFn: () => deletePost(token!, post.id),
+    mutationFn: () => {
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      return deletePost(token, post.id);
+    },
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -38,10 +69,14 @@ const Post = ({ post }: PostProps) => {
     },
   });
 
+  // ====================
+  // LIKE / UNLIKE POST
+  // ====================
+
   const likeMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       if (!token) {
-        throw new Error("You must be logged in");
+        throw new Error("Authentication required");
       }
 
       if (post.is_liked) {
@@ -51,7 +86,63 @@ const Post = ({ post }: PostProps) => {
       return likePost(token, post.id);
     },
 
-    onSuccess: () => {
+    onMutate: async () => {
+      await queryClient.cancelQueries({
+        queryKey: ["posts"],
+      });
+
+      const previousPosts =
+        queryClient.getQueryData<PostsResponse>([
+          "posts",
+        ]);
+
+      queryClient.setQueryData<PostsResponse>(
+        ["posts"],
+        (oldData) => {
+          if (!oldData) {
+            return oldData;
+          }
+
+          return {
+            ...oldData,
+
+            posts: oldData.posts.map((currentPost) => {
+              if (currentPost.id !== post.id) {
+                return currentPost;
+              }
+
+              const newIsLiked =
+                !currentPost.is_liked;
+
+              return {
+                ...currentPost,
+
+                is_liked: newIsLiked,
+
+                likes_count:
+                  currentPost.likes_count +
+                  (newIsLiked ? 1 : -1),
+              };
+            }),
+          };
+        }
+      );
+
+      return {
+        previousPosts,
+      };
+    },
+
+    onError: (_error, _variables, context) => {
+      if (context?.previousPosts) {
+        queryClient.setQueryData(
+          ["posts"],
+          context.previousPosts
+        );
+      }
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ["posts"],
       });
@@ -75,7 +166,7 @@ const Post = ({ post }: PostProps) => {
             alt=""
             width={40}
             height={40}
-            className="w-10 h-10 rounded-full object-cover"
+            className="h-10 w-10 rounded-full object-cover"
           />
 
           <span className="font-medium">
@@ -87,11 +178,15 @@ const Post = ({ post }: PostProps) => {
         {user?.id === post.user_id && (
           <button
             type="button"
-            onClick={() => deleteMutation.mutate()}
+            onClick={() =>
+              deleteMutation.mutate()
+            }
             disabled={deleteMutation.isPending}
-            className="text-red-500 text-sm hover:text-red-700 disabled:opacity-50"
+            className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
           >
-            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            {deleteMutation.isPending
+              ? "Deleting..."
+              : "Delete"}
           </button>
         )}
 
@@ -100,48 +195,62 @@ const Post = ({ post }: PostProps) => {
       {/* CONTENT */}
       <div className="flex flex-col gap-4">
 
-        {post.image && (
-          <div className="relative w-full h-96">
+        {imageUrl && (
+          <div className="relative h-96 w-full">
+
             <Image
               src={imageUrl}
               alt=""
               fill
               unoptimized
-              className="object-cover rounded-md"
+              className="rounded-md object-cover"
             />
+
           </div>
         )}
 
-        <p>
-          {post.content}
-        </p>
+        <p>{post.content}</p>
 
       </div>
 
       {/* INTERACTION */}
-      <div className="flex items-center justify-between text-sm my-4">
+      <div className="my-4 flex items-center justify-between text-sm">
 
         <div className="flex gap-8">
 
-          <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl">
+          {/* LIKE */}
+
+          <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-2">
 
             <button
               type="button"
-              onClick={() => likeMutation.mutate()}
+              onClick={() =>
+                likeMutation.mutate()
+              }
               disabled={likeMutation.isPending}
               className="cursor-pointer disabled:opacity-50"
             >
+
               <Image
                 src="/like.png"
                 alt="Like"
                 width={16}
                 height={16}
               />
+
             </button>
 
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300">
+              |
+            </span>
 
-            <span className="text-gray-500">
+            <span
+              className={
+                post.is_liked
+                  ? "font-medium text-blue-500"
+                  : "text-gray-500"
+              }
+            >
               {post.likes_count}{" "}
               <span className="hidden md:inline">
                 Likes
@@ -150,17 +259,21 @@ const Post = ({ post }: PostProps) => {
 
           </div>
 
-          <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl">
+          {/* COMMENTS */}
+
+          <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-2">
 
             <Image
               src="/comment.png"
-              alt=""
+              alt="Comments"
               width={16}
               height={16}
               className="cursor-pointer"
             />
 
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300">
+              |
+            </span>
 
             <span className="text-gray-500">
               20{" "}
@@ -173,17 +286,21 @@ const Post = ({ post }: PostProps) => {
 
         </div>
 
-        <div className="flex items-center gap-4 bg-slate-100 p-2 rounded-xl">
+        {/* SHARE */}
+
+        <div className="flex items-center gap-4 rounded-xl bg-slate-100 p-2">
 
           <Image
             src="/share.png"
-            alt=""
+            alt="Share"
             width={16}
             height={16}
             className="cursor-pointer"
           />
 
-          <span className="text-gray-300">|</span>
+          <span className="text-gray-300">
+            |
+          </span>
 
           <span className="text-gray-500">
             4{" "}
@@ -196,10 +313,11 @@ const Post = ({ post }: PostProps) => {
 
       </div>
 
-      <Comments postId={post.id}/>
+      <Comments postId={post.id} />
 
     </div>
   );
 };
 
 export default Post;
+
