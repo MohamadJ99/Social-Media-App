@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Comments from "./Comments";
 import { useState } from "react";
-
+import type { PostType } from "@/types/post";
 import {
   useMutation,
   useQueryClient,
@@ -21,22 +21,7 @@ import {
   unlikePost,
 } from "@/api/likes";
 
-type PostType = {
-  id: number;
-  user_id: number;
-  content: string;
-  image: string | null;
-  created_at: string;
-  likes_count: number;
-  comments_count: number;
-  is_liked: boolean;
 
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
-};
 
 type PostsResponse = {
   posts: PostType[];
@@ -52,7 +37,7 @@ const Post = ({ post }: PostProps) => {
   const queryClient = useQueryClient();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [content, setContent] = useState(post.content);
+  const [content, setContent] = useState(post.content ?? "");
 
   const isOwner = user?.id === post.user_id;
 
@@ -196,7 +181,7 @@ const Post = ({ post }: PostProps) => {
   };
 
   const handleCancelEdit = () => {
-    setContent(post.content);
+    setContent(post.content?? "");
     setIsEditing(false);
   };
 
@@ -290,7 +275,7 @@ const Post = ({ post }: PostProps) => {
           <div className="flex flex-col gap-3">
 
             <textarea
-              value={content}
+              value={content?? ""}
               onChange={(event) =>
                 setContent(event.target.value)
               }
@@ -307,7 +292,7 @@ const Post = ({ post }: PostProps) => {
                 type="button"
                 onClick={handleUpdate}
                 disabled={
-                  !content.trim() ||
+                  !content?.trim() ||
                   updateMutation.isPending
                 }
                 className="font-medium text-blue-500 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
