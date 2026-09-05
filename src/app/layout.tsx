@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "@/providers/QueryProvider";
 
@@ -32,20 +32,20 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-     
-        <body className="min-h-full flex flex-col">
-          <QueryProvider>
-          <AuthProvider> 
-          <div className="w-full bg-white px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
-            <Navbar />
-          </div>
-          <div className="bg-white px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
-            {children}
-          </div>
+
+      <body className="min-h-full flex flex-col">
+        <QueryProvider>
+          <AuthProvider>
+            <div className="w-full bg-white px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
+              <Navbar />
+            </div>
+            <div className="bg-white px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
+              {children}
+            </div>
           </AuthProvider>
-          </QueryProvider>
-        </body>
-      
+        </QueryProvider>
+      </body>
+
     </html>
 
   );

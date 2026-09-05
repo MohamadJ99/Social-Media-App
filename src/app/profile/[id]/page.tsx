@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Feed from "@/components/Feed";
-import LeftMenu from "@/components/LeftMenu";
-import RightMenu from "@/components/RightMenu";
+import Feed from "@/components/post/Feed";
+import LeftMenu from "@/components/layout/LeftMenu";
+import RightMenu from "@/components/layout/RightMenu";
 import Image from "next/image";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 
 type User = {
   id: number;

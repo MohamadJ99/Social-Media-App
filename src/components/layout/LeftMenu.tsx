@@ -1,7 +1,7 @@
 import Link from "next/link";
-import ProfileCard from "./ProfileCard";
+import ProfileCard from "../profile/ProfileCard";
 import Image from "next/image";
-import Ad from "./Ad";
+import Ad from "../common/Ad";
 
 
 const menuItems = [
@@ -35,12 +35,12 @@ const menuItems = [
     href: "/",
     icon: "/news.png"
   },
-   {
+  {
     name: "Courses",
     href: "/",
     icon: "/courses.png"
   },
-   {
+  {
     name: "Lists",
     href: "/",
     icon: "/lists.png"
@@ -79,7 +79,7 @@ const LeftMenu = ({ type }: { type: "home" | "profile" }) => {
         ))}
 
       </div>
-      <Ad size="sm"/>
+      <Ad size="sm" />
     </div>
   );
 };
