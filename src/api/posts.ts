@@ -29,8 +29,8 @@ export const createPost = async (
   return data;
 };
 
-export const getPosts = async (token: string) => {
-  const response = await fetch(`${API_URL}/posts`, {
+export const getPosts = async (token: string,page: number = 1,) => {
+  const response = await fetch(`${API_URL}/posts?page=${page}`, {
     method: "GET",
     headers: getAuthHeaders(token),
   });
@@ -41,7 +41,7 @@ export const getPosts = async (token: string) => {
     throw new Error(data.message || "Failed to fetch posts");
   }
 
-  return data;
+  return data.posts;
 };
 
 export const updatePost = async (
