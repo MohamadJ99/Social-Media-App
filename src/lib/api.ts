@@ -4,10 +4,20 @@ export async function apiFetch(
   endpoint: string,
   options: RequestInit = {}
 ) {
+  const isFormData = options.body instanceof FormData;
+
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
+
     headers: {
-      "Content-Type": "application/json",
+      Accept: "application/json",
+
+      ...(isFormData
+        ? {}
+        : {
+            "Content-Type": "application/json",
+          }),
+
       ...options.headers,
     },
   });
@@ -15,7 +25,9 @@ export async function apiFetch(
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "Something went wrong");
+    throw new Error(
+      data.message || "Something went wrong"
+    );
   }
 
   return data;
