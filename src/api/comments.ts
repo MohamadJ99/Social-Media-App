@@ -1,35 +1,9 @@
 import { apiFetch } from "@/lib/api";
 
-export type CommentUser = {
-  id: number;
-  name: string;
-  email: string;
-};
-
-export type Comment = {
-  id: number;
-  post_id: number;
-  user_id: number;
-  parent_id: number | null;
-  content: string;
-  created_at: string;
-  updated_at: string;
-
-  likes_count: number;
-  is_liked: boolean;
-
-  user: CommentUser;
-  replies?: Comment[];
-};
-
-type CommentsResponse = {
-  comments: Comment[];
-};
-
-type CommentResponse = {
-  message: string;
-  comment: Comment;
-};
+import type {
+  CommentResponse,
+  CommentsResponse,
+} from "@/types/comment";
 
 
 export const getComments = async (

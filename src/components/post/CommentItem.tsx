@@ -13,8 +13,9 @@ import {
   createComment,
   updateComment,
   deleteComment,
-  type Comment,
 } from "@/api/comments";
+
+import type { Comment } from "@/types/comment"
 
 import {
   likeComment,
