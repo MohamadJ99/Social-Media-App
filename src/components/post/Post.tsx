@@ -259,7 +259,6 @@ const Post = ({ post }: PostProps) => {
               src={imageUrl}
               alt=""
               fill
-              unoptimized
               className="rounded-md object-cover"
             />
 
