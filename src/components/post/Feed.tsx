@@ -7,7 +7,12 @@ import { getPosts } from "@/api/posts";
 import type { PostType, PostsResponse } from "@/types/post";
 import { useEffect, useRef } from "react";
 
-const Feed = () => {
+
+type FeedProps = {
+  userId?: number;
+};
+
+const Feed = ({ userId }: FeedProps) => {
   const { token } = useAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -20,10 +25,10 @@ const Feed = () => {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["posts"],
+    queryKey: ["posts", userId],
 
     queryFn: ({ pageParam }) =>
-      getPosts(token!, pageParam),
+      getPosts(token!, pageParam, userId),
 
     initialPageParam: 1,
 

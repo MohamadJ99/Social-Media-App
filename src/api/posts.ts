@@ -1,9 +1,19 @@
 import { apiFetch } from "@/lib/api";
 
+export const getPosts = async (
+  token: string,
+  page: number = 1,
+  userId?: number,
+) => {
+  const params = new URLSearchParams({
+    page: String(page),
+  });
 
+  if (userId) {
+    params.set("user_id", String(userId));
+  }
 
-export const getPosts = async (token: string, page: number = 1) => {
-  const data = await apiFetch(`/posts?page=${page}`, {
+  const data = await apiFetch(`/posts?${params.toString()}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,

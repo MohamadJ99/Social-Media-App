@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMyProfile } from "@/hooks/useMyProfile";
 
 const ProfileCard = () => {
@@ -22,18 +23,30 @@ const ProfileCard = () => {
     );
   }
 
+  const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL;
+
+  const avatarUrl = user.avatar
+    ? `${storageUrl}/${user.avatar}`
+    : "/default-avatar.png";
+
+  const coverUrl = user.cover_image
+    ? `${storageUrl}/${user.cover_image}`
+    : "/default-cover.jpg";
+
   return (
     <div className="flex flex-col gap-6 p-4 bg-white rounded-lg shadow-md text-sm">
+      {/* COVER & AVATAR */}
       <div className="h-20 relative">
         <Image
-          src="https://images.pexels.com/photos/34787094/pexels-photo-34787094.jpeg"
-          alt=""
+          src={coverUrl}
+          alt="Cover image"
           fill
+          sizes="100%"
           className="rounded-md object-cover"
         />
 
         <Image
-          src="https://images.pexels.com/photos/30835516/pexels-photo-30835516.jpeg"
+          src={avatarUrl}
           alt={user.name}
           width={48}
           height={48}
@@ -41,47 +54,30 @@ const ProfileCard = () => {
         />
       </div>
 
-      <div className="h-20 flex flex-col gap-2 items-center">
-        <span className="font-semibold">{user.name}</span>
+      {/* USER INFO */}
+      <div className="h-24 flex flex-col gap-2 items-center">
+        <span className="font-semibold">
+          {user.name}
+        </span>
 
-        <div className="flex items-center gap-4">
-          <div className="flex">
-            <Image
-              src="https://images.pexels.com/photos/30835516/pexels-photo-30835516.jpeg"
-              alt=""
-              width={12}
-              height={12}
-              className="rounded-full w-3 h-3"
-            />
+        <span className="text-xs text-gray-500">
+          @{user.username}
+        </span>
 
-            <Image
-              src="https://images.pexels.com/photos/30835516/pexels-photo-30835516.jpeg"
-              alt=""
-              width={12}
-              height={12}
-              className="rounded-full w-3 h-3"
-            />
+        <span className="text-xs text-gray-500">
+          {user.friends_count} Friends
+        </span>
 
-            <Image
-              src="https://images.pexels.com/photos/30835516/pexels-photo-30835516.jpeg"
-              alt=""
-              width={12}
-              height={12}
-              className="rounded-full w-3 h-3"
-            />
-          </div>
-
-          <span className="text-xs text-gray-500">
-            6000 Followers
-          </span>
-        </div>
-
-        <button className="bg-blue-500 text-white text-xs p-2 rounded-md">
+        <Link
+          href={`/profile/${user.id}`}
+          className="bg-blue-500 text-white text-xs px-3 py-2 rounded-md"
+        >
           My Profile
-        </button>
+        </Link>
       </div>
     </div>
   );
 };
 
 export default ProfileCard;
+

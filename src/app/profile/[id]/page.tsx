@@ -1,12 +1,15 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { useFriends } from "@/hooks/useFriends";
 import Feed from "@/components/post/Feed";
 import LeftMenu from "@/components/layout/LeftMenu";
 import RightMenu from "@/components/layout/RightMenu";
 import Image from "next/image";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import FriendsList from "@/components/profile/FriendsList";
 
 const ProfilePage = () => {
 
@@ -14,11 +17,15 @@ const ProfilePage = () => {
   const params = useParams();
   const id = Number(params.id);
 
-  const {
-    data: user,
-    isLoading,
-    isError,
-  } = useUserProfile(id);
+  const { user: currentUser } = useAuth();
+
+  const isOwnProfile = currentUser?.id === id;
+
+  const { data: friends = [], isLoading: isFriendsLoading, } = useFriends({
+    enabled: isOwnProfile,
+  });
+
+  const { data: user, isLoading, isError, } = useUserProfile(id);
 
 
   if (isLoading) {
@@ -47,8 +54,7 @@ const ProfilePage = () => {
     ? `${storageUrl}/${user.cover_image}`
     : "/default-cover.jpg";
 
-  console.log("avatar:", avatarUrl);
-  console.log("cover:", coverUrl);
+
   return (
     <ProtectedRoute>
       <div className="flex gap-6 pt-6">
@@ -107,8 +113,15 @@ const ProfilePage = () => {
               </div>
 
             </div>
+            
+            {isOwnProfile && (
+              <FriendsList
+                friends={friends}
+                isLoading={isFriendsLoading}
+              />
+            )}
 
-            <Feed />
+            <Feed userId={user.id} />
 
           </div>
         </div>
