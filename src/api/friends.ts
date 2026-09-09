@@ -13,3 +13,15 @@ export const getFriends = async (
 
   return response.data;
 };
+
+export const sendFriendRequest = async (
+  token: string,
+  userId: number,
+) => {
+  return apiFetch(`/users/${userId}/friend`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

@@ -128,7 +128,7 @@ const ProfilePage = () => {
 
         {/* RIGHT */}
         <div className="hidden lg:block w-[30%]">
-          <RightMenu userId={String(user.id)} />
+          <RightMenu userId={String(user.id)} isOwnProfile={isOwnProfile} />
         </div>
 
       </div>
