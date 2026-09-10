@@ -10,6 +10,8 @@ import Image from "next/image";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import FriendsList from "@/components/profile/FriendsList";
+import FriendRequests from "@/components/common/FriendRequests";
+import UserMediaCard from "@/components/profile/UserMediaCard";
 
 const ProfilePage = () => {
 
@@ -113,13 +115,24 @@ const ProfilePage = () => {
               </div>
 
             </div>
-            
+
             {isOwnProfile && (
               <FriendsList
                 friends={friends}
                 isLoading={isFriendsLoading}
               />
             )}
+
+            {/* MOBILE / TABLET */}
+            {isOwnProfile && (
+              <div className="lg:hidden">
+                <FriendRequests />
+              </div>
+            )}
+
+            <div className="lg:hidden">
+              <UserMediaCard userId={String(user.id)} />
+            </div>
 
             <Feed userId={user.id} />
 
