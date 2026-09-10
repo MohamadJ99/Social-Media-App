@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { User } from "@/types/user";
 import { useSendFriendRequest } from "@/hooks/useSendFriendRequest";
+import { useCancelFriendRequest } from "@/hooks/useCancelFriendRequest";
+import { useRemoveFriend } from "@/hooks/useRemoveFriend";
 
 
 type UserInfoCardProps = {
@@ -11,6 +13,9 @@ type UserInfoCardProps = {
 
 const UserInfoCard = ({ user, isOwnProfile }: UserInfoCardProps) => {
     const { mutate: sendRequest, isPending } = useSendFriendRequest();
+    const { mutate: cancelRequest, isPending: isCanceling, } = useCancelFriendRequest();
+    const { mutate: removeFriend, isPending: isRemoving, } = useRemoveFriend();
+
     return (
         <div className="p-4 bg-white rounded-lg shadow-md text-sm flex flex-col gap-4">
 
@@ -45,16 +50,33 @@ const UserInfoCard = ({ user, isOwnProfile }: UserInfoCardProps) => {
                     <>
                         {user.friendship?.status === "accepted" ? (
                             <button
-                                className="bg-red-500 text-white text-sm rounded-md p-2"
+                                onClick={() => {
+                                    if (user.friendship) {
+                                        removeFriend({
+                                            friendshipId: user.friendship.id,
+                                            userId: user.id,
+                                        });
+                                    }
+                                }}
+                                disabled={isRemoving}
+                                className="bg-red-500 text-white text-sm rounded-md p-2 disabled:opacity-50"
                             >
-                                Remove Friend
+                                {isRemoving ? "Removing..." : "Remove Friend"}
                             </button>
                         ) : user.friendship?.status === "pending" ? (
                             <button
-                                disabled
-                                className="bg-gray-400 text-white text-sm rounded-md p-2 cursor-not-allowed"
+                                onClick={() => {
+                                    if (user.friendship) {
+                                        cancelRequest({
+                                            friendshipId: user.friendship.id,
+                                            userId: user.id,
+                                        });
+                                    }
+                                }}
+                                disabled={isCanceling}
+                                className="bg-gray-400 text-white text-sm rounded-md p-2 disabled:opacity-50"
                             >
-                                Request Sent
+                                {isCanceling ? "Canceling..." : "Cancel Request"}
                             </button>
                         ) : (
                             <button

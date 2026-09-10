@@ -1,23 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { sendFriendRequest } from "@/api/friends";
+import { rejectFriendRequest } from "@/api/friends";
 import { useAuth } from "@/context/AuthContext";
 
-export const useSendFriendRequest = () => {
+export const useRejectFriendRequest = () => {
   const { token } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userId: number) => {
+    mutationFn: (friendshipId: number) => {
       if (!token) {
         throw new Error("Authentication required.");
       }
 
-      return sendFriendRequest(token, userId);
+      return rejectFriendRequest(token, friendshipId);
     },
 
-    onSuccess: (_data, userId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["user-profile", userId],
+        queryKey: ["friend-requests", "incoming"],
       });
     },
   });

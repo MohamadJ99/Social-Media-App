@@ -1,21 +1,28 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { sendFriendRequest } from "@/api/friends";
+import { cancelFriendRequest } from "@/api/friends";
 import { useAuth } from "@/context/AuthContext";
 
-export const useSendFriendRequest = () => {
+type CancelFriendRequestPayload = {
+  friendshipId: number;
+  userId: number;
+};
+
+export const useCancelFriendRequest = () => {
   const { token } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userId: number) => {
+    mutationFn: ({
+      friendshipId,
+    }: CancelFriendRequestPayload) => {
       if (!token) {
         throw new Error("Authentication required.");
       }
 
-      return sendFriendRequest(token, userId);
+      return cancelFriendRequest(token, friendshipId);
     },
 
-    onSuccess: (_data, userId) => {
+    onSuccess: (_data, { userId }) => {
       queryClient.invalidateQueries({
         queryKey: ["user-profile", userId],
       });
