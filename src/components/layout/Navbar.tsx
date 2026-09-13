@@ -1,16 +1,42 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import MobileMenu from "./MobileMenu";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import Notifications from "../common/Notifications";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 
 const Navbar = () => {
   const router = useRouter();
   const { user, logout, loading } = useAuth();
+  const { data: unreadData } = useUnreadNotificationsCount();
+
+  const unreadCount = unreadData?.count ?? 0;
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="h-24 flex items-center justify-between gap-6">
+    <div className="h-24 flex items-center justify-between gap-6" >
 
       {/* LEFT */}
       <div className="shrink-0">
@@ -116,13 +142,31 @@ const Navbar = () => {
         </div>
 
         {/* NOTIFICATIONS */}
-        <div className="hidden sm:block cursor-pointer">
-          <Image
-            src="/notifications.png"
-            alt="Notifications"
-            width={20}
-            height={20}
-          />
+        <div ref={notificationRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setShowNotifications((prev) => !prev)}
+            className="relative cursor-pointer"
+          >
+            <Image
+              src="/notifications.png"
+              alt="Notifications"
+              width={20}
+              height={20}
+            />
+
+            {unreadCount > 0 && (
+              <span className="absolute -right-2 -top-2 flex min-w-5 h-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 top-8 z-50">
+              <Notifications />
+            </div>
+          )}
         </div>
 
         {/* AUTH */}
@@ -185,7 +229,7 @@ const Navbar = () => {
 
       </div>
 
-    </div>
+    </div >
   );
 };
 
