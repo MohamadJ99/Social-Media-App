@@ -5,6 +5,7 @@ export type Notification = {
   read_at: string | null;
   notifiable_type: string | null;
   notifiable_id: number | null;
+  post_id: number | null;
   created_at: string;
 };
 

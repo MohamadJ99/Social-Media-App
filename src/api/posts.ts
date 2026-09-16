@@ -23,6 +23,17 @@ export const getPosts = async (
   return data.posts;
 };
 
+export const getPost = async (token: string, postId: number) => {
+  const data = await apiFetch(`/posts/${postId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return data.post;
+};
+
 export const createPost = async (
   token: string,
   content: string,

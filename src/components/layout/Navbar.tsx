@@ -164,7 +164,7 @@ const Navbar = () => {
 
           {showNotifications && (
             <div className="absolute right-0 top-8 z-50">
-              <Notifications />
+              <Notifications  onClose={() => setShowNotifications(false)} />
             </div>
           )}
         </div>
