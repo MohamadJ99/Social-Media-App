@@ -5,7 +5,7 @@ import Birthdays from "../common/Birthdays";
 import FriendRequests from "../common/FriendRequests";
 import UserInfoCard from "../profile/UserInfoCard";
 import UserMediaCard from "../profile/UserMediaCard";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfile } from "@/hooks/useProfile";
 
 type RightMenuProps = {
   userId?: string;

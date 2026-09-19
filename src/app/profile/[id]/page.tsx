@@ -8,10 +8,13 @@ import LeftMenu from "@/components/layout/LeftMenu";
 import RightMenu from "@/components/layout/RightMenu";
 import Image from "next/image";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfile } from "@/hooks/useProfile";
 import FriendsList from "@/components/profile/FriendsList";
 import FriendRequests from "@/components/common/FriendRequests";
+import UserInfoCard from "@/components/profile/UserInfoCard";
 import UserMediaCard from "@/components/profile/UserMediaCard";
+import EditProfile from "@/components/profile/EditProfile";
+import { useState } from "react";
 
 const ProfilePage = () => {
 
@@ -22,7 +25,7 @@ const ProfilePage = () => {
   const { user: currentUser } = useAuth();
 
   const isOwnProfile = currentUser?.id === id;
-
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const { data: friends = [], isLoading: isFriendsLoading, } = useFriends({
     enabled: isOwnProfile,
   });
@@ -99,6 +102,27 @@ const ProfilePage = () => {
                 {user.name}
               </h1>
 
+              {isOwnProfile && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditProfileOpen(true)}
+                  className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+                >
+                  Edit Profile
+                </button>
+              )}
+
+              {isEditProfileOpen && isOwnProfile && (
+                <EditProfile
+                  name={user.name}
+                  username={user.username}
+                  bio={user.bio}
+                  avatar={user.avatar}
+                  coverImage={user.cover_image}
+                  onClose={() => setIsEditProfileOpen(false)}
+                />
+              )}
+
               {/* STATS */}
               <div className="flex items-center justify-center gap-12 mb-4">
 
@@ -124,15 +148,24 @@ const ProfilePage = () => {
             )}
 
             {/* MOBILE / TABLET */}
+
+
+            <div className="lg:hidden">
+              <UserInfoCard
+                user={user}
+                isOwnProfile={isOwnProfile}
+              />
+
+              <UserMediaCard userId={String(user.id)} />
+            </div>
+
             {isOwnProfile && (
               <div className="lg:hidden">
                 <FriendRequests />
               </div>
             )}
 
-            <div className="lg:hidden">
-              <UserMediaCard userId={String(user.id)} />
-            </div>
+
 
             <Feed userId={user.id} />
 
