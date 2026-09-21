@@ -5,18 +5,32 @@ import { useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { createPost } from "@/api/posts";
+import PostActions from "./PostActions";
+import EmojiPickerButton from "./EmojiPickerButton";
+import ImagePreview from "./ImagePreview";
+import VideoPreview from "./VideoPreview";
 
 const AddPost = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [video, setVideo] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL;
+
+  const avatarUrl = user?.avatar
+    ? `${storageUrl}/${user.avatar}`
+    : "/default-avatar.png";
 
   const showMessage = (message: string, success: boolean) => {
     setMessage(message);
@@ -35,12 +49,73 @@ const AddPost = () => {
     if (!file) return;
 
     setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+
+  const handleVideoChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setVideo(file);
+    setVideoPreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveVideo = () => {
+    setVideo(null);
+    setVideoPreview(null);
+
+    if (videoInputRef.current) {
+      videoInputRef.current.value = "";
+    }
+  };
+
+  const handleEmojiClick = (emoji: string) => {
+    const textarea = textareaRef.current;
+
+    if (!textarea) {
+      setContent((prev) => prev + emoji);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    const newContent =
+      content.slice(0, start) +
+      emoji +
+      content.slice(end);
+
+    setContent(newContent);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+
+      const cursorPosition = start + emoji.length;
+
+      textarea.setSelectionRange(
+        cursorPosition,
+        cursorPosition
+      );
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!content.trim() && !image) {
+    if (!content.trim() && !image && !video) {
       showMessage("Please write something or select an image", false);
       return;
     }
@@ -53,23 +128,25 @@ const AddPost = () => {
     setLoading(true);
 
     try {
-      const data = await createPost(
-        token,
-        content,
-        image
-      );
+      await createPost(token, content, image, video);
 
-      console.log("Created post:", data);
-      
+
       queryClient.invalidateQueries({
         queryKey: ["posts"],
       });
 
       setContent("");
       setImage(null);
+      setImagePreview(null);
+      setVideo(null);
+      setVideoPreview(null);
 
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
+      }
+
+      if (videoInputRef.current) {
+        videoInputRef.current.value = "";
       }
 
       showMessage("Post created successfully!", true);
@@ -94,11 +171,11 @@ const AddPost = () => {
 
       {/* AVATAR */}
       <Image
-        src="https://images.pexels.com/photos/29883936/pexels-photo-29883936.jpeg"
-        alt=""
+        src={avatarUrl}
+        alt={user?.name ?? "User avatar"}
         width={48}
         height={48}
-        className="w-12 h-12 object-cover rounded-full"
+        className="h-12 w-12 rounded-full object-cover"
       />
 
       <div className="flex-1">
@@ -109,6 +186,7 @@ const AddPost = () => {
           <div className="flex gap-4">
 
             <textarea
+              ref={textareaRef}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="What's on your mind?"
@@ -116,101 +194,37 @@ const AddPost = () => {
               rows={3}
             />
 
-            <Image
-              src="/emoji.png"
-              alt=""
-              width={20}
-              height={20}
-              className="w-5 h-5 cursor-pointer self-end"
+            <EmojiPickerButton
+              onEmojiClick={handleEmojiClick}
             />
 
           </div>
 
           {/* SELECTED IMAGE */}
-          {image && (
-            <div className="mt-3 text-sm text-gray-500">
-              Selected: {image.name}
-            </div>
+          {imagePreview && (
+            <ImagePreview
+              src={imagePreview}
+              onRemove={handleRemoveImage}
+            />
+          )}
+           
+           {/* SELECTED VIDEO */}
+          {videoPreview && (
+            <VideoPreview
+              src={videoPreview}
+              onRemove={handleRemoveVideo}
+            />
           )}
 
           {/* OPTIONS */}
-          <div className="flex items-center gap-4 mt-4 text-gray-400 flex-wrap">
 
-            {/* PHOTO */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Image
-                src="/addimage.png"
-                alt=""
-                width={20}
-                height={20}
-              />
-              Photo
-            </button>
-
-            {/* VIDEO */}
-            <button
-              type="button"
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Image
-                src="/addVideo.png"
-                alt=""
-                width={20}
-                height={20}
-              />
-              Video
-            </button>
-
-            {/* POLL */}
-            <button
-              type="button"
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Image
-                src="/poll.png"
-                alt=""
-                width={20}
-                height={20}
-              />
-              Poll
-            </button>
-
-            {/* EVENT */}
-            <button
-              type="button"
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Image
-                src="/addevent.png"
-                alt=""
-                width={20}
-                height={20}
-              />
-              Event
-            </button>
-
-            {/* POST */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="ml-auto bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-5 py-2 rounded-lg cursor-pointer disabled:cursor-not-allowed transition"
-            >
-              {loading ? "Posting..." : "Post"}
-            </button>
-
-          </div>
+          <PostActions
+            fileInputRef={fileInputRef}
+            videoInputRef={videoInputRef}
+            onImageChange={handleImageChange}
+            onVideoChange={handleVideoChange}
+            loading={loading}
+          />
 
         </form>
 
@@ -218,8 +232,8 @@ const AddPost = () => {
         {message && (
           <div
             className={`mt-4 px-4 py-3 rounded-lg text-sm font-medium text-center border ${isSuccess
-                ? "bg-green-50 text-green-700 border-green-200"
-                : "bg-red-50 text-red-700 border-red-200"
+              ? "bg-green-50 text-green-700 border-green-200"
+              : "bg-red-50 text-red-700 border-red-200"
               }`}
           >
             {message}

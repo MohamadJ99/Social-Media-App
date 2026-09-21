@@ -186,6 +186,10 @@ const Post = ({ post }: PostProps) => {
     ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${post.image}`
     : null;
 
+  const videoUrl = post.video
+    ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${post.video}`
+    : null;
+
   return (
     <div className="flex flex-col gap-4">
 
@@ -263,6 +267,14 @@ const Post = ({ post }: PostProps) => {
             />
 
           </div>
+        )}
+
+        {videoUrl && (
+          <video
+            src={videoUrl}
+            controls
+            className="max-h-[500px] w-full rounded-md object-cover"
+          />
         )}
 
         {/* Edit */}

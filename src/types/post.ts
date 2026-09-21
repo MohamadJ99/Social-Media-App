@@ -9,6 +9,7 @@ export type PostType = {
   user_id: number;
   content: string | null;
   image: string | null;
+  video: string | null;
   created_at: string;
   likes_count: number;
   comments_count: number;

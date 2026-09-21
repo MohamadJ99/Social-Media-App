@@ -38,6 +38,7 @@ export const createPost = async (
   token: string,
   content: string,
   image: File | null,
+  video: File | null,
 ) => {
   const formData = new FormData();
 
@@ -47,6 +48,10 @@ export const createPost = async (
 
   if (image) {
     formData.append("image", image);
+  }
+
+  if (video) {
+    formData.append("video", video);
   }
 
   return apiFetch("/posts", {

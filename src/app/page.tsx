@@ -5,6 +5,7 @@ import RightMenu from "@/components/layout/RightMenu";
 import Stories from "@/components/stories/Stories";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 
+
 export default function HomePage() {
   return (
     <ProtectedRoute>
