@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Comments from "./Comments";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { PostType, PostsResponse } from "@/types/post";
 import {
   useMutation,
@@ -22,6 +22,8 @@ import {
   unlikePost,
 } from "@/api/likes";
 
+import Link from "next/link";
+
 
 type PostProps = {
   post: PostType;
@@ -31,7 +33,7 @@ const Post = ({ post }: PostProps) => {
   const { user, token } = useAuth();
 
   const queryClient = useQueryClient();
-
+  const commentInputRef = useRef<HTMLInputElement | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(post.content ?? "");
 
@@ -190,6 +192,10 @@ const Post = ({ post }: PostProps) => {
     ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${post.video}`
     : null;
 
+  const avatarUrl = post.user.avatar
+    ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${post.user.avatar}`
+    : "/default-avatar.png";
+
   return (
     <div className="flex flex-col gap-4">
 
@@ -199,17 +205,22 @@ const Post = ({ post }: PostProps) => {
 
         <div className="flex items-center gap-4">
 
-          <Image
-            src="https://images.pexels.com/photos/1311311/pexels-photo-1311311.jpeg"
-            alt=""
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-full object-cover"
-          />
+          <Link
+            href={`/profile/${post.user.id}`}
+            className="flex cursor-pointer items-center gap-4"
+          >
+            <Image
+              src={avatarUrl}
+              alt={post.user.name}
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full object-cover"
+            />
 
-          <span className="font-medium">
-            {post.user.name}
-          </span>
+            <span className="font-medium transition-colors hover:text-blue-500">
+              {post.user.name}
+            </span>
+          </Link>
 
         </div>
 
@@ -224,7 +235,7 @@ const Post = ({ post }: PostProps) => {
                 onClick={() =>
                   setIsEditing(true)
                 }
-                className="text-blue-500 hover:text-blue-700"
+                className="cursor-pointer text-blue-500 hover:text-blue-700"
               >
                 Edit
               </button>
@@ -239,7 +250,7 @@ const Post = ({ post }: PostProps) => {
                 deleteMutation.isPending ||
                 updateMutation.isPending
               }
-              className="text-red-500 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer text-red-500 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {deleteMutation.isPending
                 ? "Deleting..."
@@ -316,7 +327,7 @@ const Post = ({ post }: PostProps) => {
                 disabled={
                   updateMutation.isPending
                 }
-                className="text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className=" cursor-pointer text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -338,31 +349,20 @@ const Post = ({ post }: PostProps) => {
 
           {/* Like */}
 
-          <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-2">
+          <button
+            type="button"
+            onClick={() => likeMutation.mutate()}
+            disabled={likeMutation.isPending}
+            className="flex cursor-pointer items-center gap-4 rounded-xl bg-slate-50 p-2 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Image
+              src="/like.png"
+              alt="Like"
+              width={16}
+              height={16}
+            />
 
-            <button
-              type="button"
-              onClick={() =>
-                likeMutation.mutate()
-              }
-              disabled={
-                likeMutation.isPending
-              }
-              className="cursor-pointer disabled:opacity-50"
-            >
-
-              <Image
-                src="/like.png"
-                alt="Like"
-                width={16}
-                height={16}
-              />
-
-            </button>
-
-            <span className="text-gray-300">
-              |
-            </span>
+            <span className="text-gray-300">|</span>
 
             <span
               className={
@@ -372,73 +372,69 @@ const Post = ({ post }: PostProps) => {
               }
             >
               {post.likes_count}{" "}
-
               <span className="hidden md:inline">
                 Likes
               </span>
             </span>
+          </button>
 
-          </div>
+          {/* Comment */}
 
-          {/* Comments */}
-
-          <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-2">
-
+          <button
+            type="button"
+            onClick={() => commentInputRef.current?.focus()}
+            className="flex cursor-pointer items-center gap-4 rounded-xl bg-slate-50 p-2 transition hover:bg-slate-100"
+          >
             <Image
               src="/comment.png"
               alt="Comments"
               width={16}
               height={16}
-              className="cursor-pointer"
             />
 
-            <span className="text-gray-300">
-              |
-            </span>
+            <span className="text-gray-300">|</span>
 
             <span className="text-gray-500">
               {post.comments_count}{" "}
-
               <span className="hidden md:inline">
                 Comments
               </span>
             </span>
-
-          </div>
+          </button>
 
         </div>
 
         {/* Share */}
 
-        <div className="flex items-center gap-4 rounded-xl bg-slate-100 p-2">
-
+        <button
+          type="button"
+          onClick={() => {
+            // Share logic
+          }}
+          className="flex cursor-pointer items-center gap-4 rounded-xl bg-slate-50 p-2 transition hover:bg-slate-100"
+        >
           <Image
             src="/share.png"
             alt="Share"
             width={16}
             height={16}
-            className="cursor-pointer"
           />
 
-          <span className="text-gray-300">
-            |
-          </span>
+          <span className="text-gray-300">|</span>
 
           <span className="text-gray-500">
             4{" "}
-
             <span className="hidden md:inline">
               Shares
             </span>
           </span>
-
-        </div>
+        </button>
 
       </div>
 
       {/* Comments */}
 
-      <Comments postId={post.id} />
+      <Comments postId={post.id} commentInputRef={commentInputRef} />
 
     </div>
   );

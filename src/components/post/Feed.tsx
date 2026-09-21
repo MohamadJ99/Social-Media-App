@@ -79,19 +79,23 @@ const Feed = ({ userId }: FeedProps) => {
     data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-lg flex flex-col gap-12">
+    <div className="flex flex-col gap-6">
 
       {posts.length === 0 ? (
-        <p className="text-center text-gray-500">
+        <p className="rounded-lg bg-white p-6 text-center text-gray-500 shadow-md">
           No posts yet.
         </p>
       ) : (
-        posts.map((post) => (
-          <Post
-            key={post.id}
-            post={post}
-          />
-        ))
+        <div className="flex flex-col gap-6">
+          {posts.map((post) => (
+            <div
+              key={post.id}
+              className="rounded-lg bg-white p-4 shadow-md"
+            >
+              <Post post={post} />
+            </div>
+          ))}
+        </div>
       )}
 
       {isFetchingNextPage && (

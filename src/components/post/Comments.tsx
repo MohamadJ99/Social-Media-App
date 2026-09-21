@@ -15,16 +15,26 @@ import {
 } from "@/api/comments";
 
 import CommentItem from "./CommentItem";
+import { useEmojiInput } from "@/hooks/useEmojiInput";
+import EmojiPicker from "emoji-picker-react";
 
 type CommentsProps = {
   postId: number;
+  commentInputRef: React.RefObject<HTMLInputElement | null>;
 };
 
-const Comments = ({ postId }: CommentsProps) => {
-  const { token } = useAuth();
+const Comments = ({ postId, commentInputRef }: CommentsProps) => {
+  const { token, user } = useAuth();
   const queryClient = useQueryClient();
 
   const [content, setContent] = useState("");
+
+  const {
+    inputRef,
+    handleEmojiClick,
+  } = useEmojiInput(content, setContent);
+
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const {
     data,
@@ -101,8 +111,12 @@ const Comments = ({ postId }: CommentsProps) => {
 
         {/* USER AVATAR */}
         <Image
-          src="https://images.pexels.com/photos/30299053/pexels-photo-30299053.jpeg"
-          alt="Your profile"
+          src={
+            user?.avatar
+              ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${user.avatar}`
+              : "/default-avatar.png"
+          }
+          alt={user?.name ?? "Your profile"}
           width={32}
           height={32}
           className="h-8 w-8 rounded-full object-cover"
@@ -112,6 +126,10 @@ const Comments = ({ postId }: CommentsProps) => {
         <div className="flex flex-1 items-center rounded-xl bg-slate-100 px-4 py-2 text-sm">
 
           <input
+            ref={(element) => {
+              inputRef.current = element;
+              commentInputRef.current = element;
+            }}
             type="text"
             value={content}
             onChange={(event) =>
@@ -129,19 +147,35 @@ const Comments = ({ postId }: CommentsProps) => {
           />
 
           {/* EMOJI */}
-          <button
-            type="button"
-            className="mr-3"
-            aria-label="Add emoji"
-          >
-            <Image
-              src="/emoji.png"
-              alt="Emoji"
-              width={16}
-              height={16}
-              className="h-4 w-4 cursor-pointer"
-            />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() =>
+                setShowEmojiPicker((prev) => !prev)
+              }
+              className="mr-3 cursor-pointer"
+              aria-label="Add emoji"
+            >
+              <Image
+                src="/emoji.png"
+                alt="Emoji"
+                width={16}
+                height={16}
+                className="h-4 w-4"
+              />
+            </button>
+
+            {showEmojiPicker && (
+              <div className="absolute bottom-8 right-0 z-50">
+                <EmojiPicker
+                  onEmojiClick={(emojiData) => {
+                    handleEmojiClick(emojiData.emoji);
+                    setShowEmojiPicker(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
 
           {/* SEND */}
           <button

@@ -22,6 +22,8 @@ import {
   unlikeComment,
 } from "@/api/likes";
 
+import Link from "next/link";
+
 type CommentItemProps = {
   comment: Comment;
   postId: number;
@@ -41,6 +43,10 @@ const CommentItem = ({
   const [replyContent, setReplyContent] = useState("");
 
   const isOwner = user?.id === comment.user_id;
+
+  const avatarUrl = comment.user.avatar
+    ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${comment.user.avatar}`
+    : "/default-avatar.png";
 
   const refreshComments = () => {
     queryClient.invalidateQueries({
@@ -98,7 +104,7 @@ const CommentItem = ({
 
     onSuccess: () => {
       refreshComments();
-      
+
       queryClient.invalidateQueries({
         queryKey: ["posts"],
       });
@@ -153,13 +159,18 @@ const CommentItem = ({
 
       <div className="flex gap-4">
 
-        <Image
-          src="https://images.pexels.com/photos/30299053/pexels-photo-30299053.jpeg"
-          alt={`${comment.user.name}'s profile`}
-          width={40}
-          height={40}
-          className="h-10 w-10 rounded-full object-cover"
-        />
+        <Link
+          href={`/profile/${comment.user.id}`}
+          className="flex shrink-0 items-start"
+        >
+          <Image
+            src={avatarUrl}
+            alt={`${comment.user.name}'s profile`}
+            width={40}
+            height={40}
+            className="h-10 w-10 cursor-pointer rounded-full object-cover"
+          />
+        </Link>
 
         <div className="flex-1">
 
@@ -167,9 +178,12 @@ const CommentItem = ({
 
           <div className="flex items-center justify-between">
 
-            <span className="font-medium">
+            <Link
+              href={`/profile/${comment.user.id}`}
+              className="font-medium transition-colors hover:text-blue-500"
+            >
               {comment.user.name}
-            </span>
+            </Link>
 
             {isOwner && (
               <div className="flex gap-3 text-xs">
@@ -180,7 +194,7 @@ const CommentItem = ({
                     onClick={() =>
                       setIsEditing(true)
                     }
-                    className="text-blue-500"
+                    className="cursor-pointer text-blue-500 transition-colors hover:text-blue-700"
                   >
                     Edit
                   </button>
@@ -194,7 +208,7 @@ const CommentItem = ({
                   disabled={
                     deleteMutation.isPending
                   }
-                  className="text-red-500 disabled:opacity-50"
+                  className="cursor-pointer text-red-500 transition-colors hover:text-red-700"
                 >
                   {deleteMutation.isPending
                     ? "Deleting..."
@@ -263,15 +277,10 @@ const CommentItem = ({
 
             <button
               type="button"
-              onClick={() =>
-                likeMutation.mutate()
-              }
-              disabled={
-                likeMutation.isPending
-              }
-              className="flex items-center gap-2 disabled:opacity-50"
+              onClick={() => likeMutation.mutate()}
+              disabled={likeMutation.isPending}
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
-
               <Image
                 src="/like.png"
                 alt="Like"
@@ -283,12 +292,11 @@ const CommentItem = ({
                 className={
                   comment.is_liked
                     ? "text-blue-500"
-                    : ""
+                    : "text-gray-500"
                 }
               >
                 {comment.likes_count} Likes
               </span>
-
             </button>
 
             {/* REPLY */}
@@ -300,7 +308,7 @@ const CommentItem = ({
                   !showReplyInput
                 )
               }
-              className="hover:text-gray-800"
+              className="cursor-pointer text-gray-500 transition-colors hover:text-blue-500"
             >
               Reply
             </button>
