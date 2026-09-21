@@ -6,6 +6,7 @@ import { useState } from "react";
 const Register = () => {
   const [form, setForm] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     password_confirmation: "",
@@ -43,8 +44,6 @@ const Register = () => {
 
       const data = await response.json();
 
-      console.log("Response:", data);
-
       if (!response.ok) {
         if (data.errors) {
           const errors = Object.values(data.errors).flat();
@@ -64,6 +63,7 @@ const Register = () => {
       // Clear form
       setForm({
         name: "",
+        username: "",
         email: "",
         password: "",
         password_confirmation: "",
@@ -131,6 +131,24 @@ const Register = () => {
               name="name"
               placeholder="Enter your name"
               value={form.name}
+              onChange={handleChange}
+              className="w-full rounded-lg bg-slate-100 px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+            />
+
+          </div>
+
+          {/* USERNAME */}
+          <div className="flex flex-col gap-2">
+
+            <label className="text-xs sm:text-sm font-medium text-gray-600">
+              Username
+            </label>
+
+            <input
+              type="text"
+              name="username"
+              placeholder="Enter your username"
+              value={form.username}
               onChange={handleChange}
               className="w-full rounded-lg bg-slate-100 px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none focus:ring-2 focus:ring-blue-400"
             />
@@ -206,8 +224,8 @@ const Register = () => {
         {message && (
           <div
             className={`mt-4 rounded-lg px-3 sm:px-4 py-3 text-xs sm:text-sm text-center ${isSuccess
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
               }`}
           >
             {message}
