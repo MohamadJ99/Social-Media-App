@@ -7,3 +7,42 @@
 .scrollbar-hide {
   scrollbar-width: none;
 }
+
+@keyframes auth-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes auth-slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.auth-slide-left {
+  animation: auth-slide-left 350ms ease-out;
+}
+
+.auth-slide-right {
+  animation: auth-slide-right 350ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-slide-left,
+  .auth-slide-right {
+    animation: none;
+  }
+}
