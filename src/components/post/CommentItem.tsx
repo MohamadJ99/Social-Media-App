@@ -24,6 +24,9 @@ import {
 
 import Link from "next/link";
 
+import { useEmojiInput } from "@/hooks/useEmojiInput";
+import EmojiPickerButton from "@/components/post/EmojiPickerButton";
+
 type CommentItemProps = {
   comment: Comment;
   postId: number;
@@ -42,6 +45,13 @@ const CommentItem = ({
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyContent, setReplyContent] = useState("");
 
+  const {
+    inputRef: replyInputRef,
+    handleEmojiClick: handleReplyEmojiClick,
+  } = useEmojiInput(
+    replyContent,
+    setReplyContent
+  );
   const isOwner = user?.id === comment.user_id;
 
   const avatarUrl = comment.user.avatar
@@ -318,15 +328,16 @@ const CommentItem = ({
           {/* REPLY INPUT */}
 
           {showReplyInput && (
-            <div className="mt-3 flex gap-2">
+            <div className="flex flex-1 items-center rounded-xl bg-slate-100 px-4 py-2 text-sm">
 
               <input
+                ref={(element) => {
+                  replyInputRef.current = element;
+                }}
                 type="text"
                 value={replyContent}
                 onChange={(e) =>
-                  setReplyContent(
-                    e.target.value
-                  )
+                  setReplyContent(e.target.value)
                 }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -334,10 +345,12 @@ const CommentItem = ({
                   }
                 }}
                 placeholder="Write a reply..."
-                disabled={
-                  replyMutation.isPending
-                }
-                className="flex-1 rounded-lg bg-slate-100 px-4 py-2 text-sm outline-none"
+                disabled={replyMutation.isPending}
+                className="flex-1 bg-transparent outline-none disabled:cursor-not-allowed"
+              />
+
+              <EmojiPickerButton
+                onEmojiClick={handleReplyEmojiClick}
               />
 
               <button
@@ -347,7 +360,7 @@ const CommentItem = ({
                   !replyContent.trim() ||
                   replyMutation.isPending
                 }
-                className="text-sm text-blue-500 disabled:opacity-50"
+                className="ml-3 text-sm font-medium text-blue-500 transition hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {replyMutation.isPending
                   ? "Sending..."
