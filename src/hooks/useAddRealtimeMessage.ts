@@ -1,8 +1,6 @@
 "use client";
 
-import {
-    useCallback,
-} from "react";
+import { useCallback } from "react";
 
 import {
     useQueryClient,
@@ -14,6 +12,10 @@ import type {
     MessagesPage,
 } from "@/api/messages";
 
+import type {
+    Conversation,
+} from "@/api/conversations";
+
 export const useAddRealtimeMessage = (
     conversationId: number
 ) => {
@@ -21,6 +23,12 @@ export const useAddRealtimeMessage = (
 
     return useCallback(
         (message: Message) => {
+            /*
+            |--------------------------------------------------------------------------
+            | Update Messages Cache
+            |--------------------------------------------------------------------------
+            */
+
             queryClient.setQueryData<
                 InfiniteData<MessagesPage>
             >(
@@ -39,6 +47,25 @@ export const useAddRealtimeMessage = (
                                     return page;
                                 }
 
+                                /*
+                                |--------------------------------------------------------------------------
+                                | Prevent Duplicate Messages
+                                |--------------------------------------------------------------------------
+                                */
+
+                                const alreadyExists =
+                                    page.data.some(
+                                        (item) =>
+                                            item.id ===
+                                            message.id
+                                    );
+
+                                if (
+                                    alreadyExists
+                                ) {
+                                    return page;
+                                }
+
                                 return {
                                     ...page,
 
@@ -52,7 +79,68 @@ export const useAddRealtimeMessage = (
                     };
                 }
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Update Conversations Cache
+            |--------------------------------------------------------------------------
+            */
+
+            queryClient.setQueryData<
+                Conversation[]
+            >(
+                ["conversations"],
+                (oldConversations) => {
+                    if (
+                        !oldConversations
+                    ) {
+                        return oldConversations;
+                    }
+
+                    return oldConversations
+                        .map(
+                            (conversation) => {
+                                if (
+                                    conversation.id !==
+                                    conversationId
+                                ) {
+                                    return conversation;
+                                }
+
+                                return {
+                                    ...conversation,
+
+                                    last_message: {
+                                        id:
+                                            message.id,
+                                        body:
+                                            message.body,
+                                        user_id:
+                                            message.user.id,
+                                        created_at:
+                                            message.created_at,
+                                    },
+
+                                    updated_at:
+                                        message.created_at,
+                                };
+                            }
+                        )
+                        .sort(
+                            (a, b) =>
+                                new Date(
+                                    b.updated_at
+                                ).getTime() -
+                                new Date(
+                                    a.updated_at
+                                ).getTime()
+                        );
+                }
+            );
         },
-        [queryClient, conversationId]
+        [
+            queryClient,
+            conversationId,
+        ]
     );
 };

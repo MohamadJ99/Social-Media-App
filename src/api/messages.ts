@@ -55,3 +55,38 @@ export const sendMessage = async (
         }
     );
 };
+
+
+export const updateMessage = async (
+    token: string,
+    messageId: number,
+    body: string
+): Promise<{ data: Message }> => {
+    return apiFetch(
+        `/messages/${messageId}`,
+        {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                body,
+            }),
+        }
+    );
+};
+
+export const deleteMessage = async (
+    token: string,
+    messageId: number
+): Promise<{ message: string }> => {
+    return apiFetch(
+        `/messages/${messageId}`,
+        {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+};

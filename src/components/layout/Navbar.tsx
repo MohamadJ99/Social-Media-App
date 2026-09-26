@@ -132,14 +132,17 @@ const Navbar = () => {
         </div>
 
         {/* MESSAGES */}
-        <div className="hidden sm:block cursor-pointer">
+        <Link
+          href="/chat"
+          className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-gray-100"
+        >
           <Image
             src="/messages.png"
             alt="Messages"
             width={20}
             height={20}
           />
-        </div>
+        </Link>
 
         {/* NOTIFICATIONS */}
         <div ref={notificationRef} className="relative">
@@ -164,7 +167,7 @@ const Navbar = () => {
 
           {showNotifications && (
             <div className="absolute right-0 top-8 z-50">
-              <Notifications  onClose={() => setShowNotifications(false)} />
+              <Notifications onClose={() => setShowNotifications(false)} />
             </div>
           )}
         </div>
