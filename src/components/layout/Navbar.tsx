@@ -210,7 +210,7 @@ const Navbar = () => {
                   await logout();
                   router.push("/login");
                 }}
-                className="text-sm text-red-500 hover:text-red-600 cursor-pointer whitespace-nowrap"
+                className="hidden lg:block text-sm text-red-500 hover:text-red-600 cursor-pointer whitespace-nowrap"
               >
                 Logout
               </button>
