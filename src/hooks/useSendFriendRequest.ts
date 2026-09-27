@@ -17,7 +17,7 @@ export const useSendFriendRequest = () => {
 
     onSuccess: (_data, userId) => {
       queryClient.invalidateQueries({
-        queryKey: ["user-profile", userId],
+        queryKey: ["profile", userId],
       });
     },
   });

@@ -59,7 +59,7 @@ const UserInfoCard = ({ user, isOwnProfile }: UserInfoCardProps) => {
                                     }
                                 }}
                                 disabled={isRemoving}
-                                className="bg-red-500 text-white text-sm rounded-md p-2 disabled:opacity-50"
+                                className="cursor-pointer rounded-md bg-red-500 p-2 text-sm text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isRemoving ? "Removing..." : "Remove Friend"}
                             </button>
@@ -74,7 +74,7 @@ const UserInfoCard = ({ user, isOwnProfile }: UserInfoCardProps) => {
                                     }
                                 }}
                                 disabled={isCanceling}
-                                className="bg-gray-400 text-white text-sm rounded-md p-2 disabled:opacity-50"
+                                className="cursor-pointer rounded-md bg-gray-400 p-2 text-sm text-white transition hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isCanceling ? "Canceling..." : "Cancel Request"}
                             </button>
@@ -82,14 +82,16 @@ const UserInfoCard = ({ user, isOwnProfile }: UserInfoCardProps) => {
                             <button
                                 onClick={() => sendRequest(user.id)}
                                 disabled={isPending}
-                                className="bg-blue-500 text-white text-sm rounded-md p-2 disabled:opacity-50"
+                                className="cursor-pointer rounded-md bg-purple-600 p-2 text-sm text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isPending ? "Sending..." : "Add Friend"}
                             </button>
                         )}
                     </>
                 )}
-                <span className="text-red-400 self-end text-xs cursor-pointer">Block User</span>
+                <span className="cursor-pointer self-end text-xs text-red-400 transition hover:text-red-600">
+                    Block User
+                </span>
             </div>
 
         </div>

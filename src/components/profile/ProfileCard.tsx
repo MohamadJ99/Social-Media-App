@@ -70,7 +70,7 @@ const ProfileCard = () => {
 
         <Link
           href={`/profile/${user.id}`}
-          className="bg-blue-500 text-white text-xs px-3 py-2 rounded-md"
+          className="cursor-pointer rounded-md bg-purple-600 px-3 py-2 text-xs text-white transition hover:bg-purple-700"
         >
           My Profile
         </Link>

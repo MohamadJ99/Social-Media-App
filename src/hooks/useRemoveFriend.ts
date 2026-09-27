@@ -24,7 +24,7 @@ export const useRemoveFriend = () => {
 
     onSuccess: (_data, { userId }) => {
       queryClient.invalidateQueries({
-        queryKey: ["user-profile", userId],
+        queryKey: ["profile", userId],
       });
 
       queryClient.invalidateQueries({
