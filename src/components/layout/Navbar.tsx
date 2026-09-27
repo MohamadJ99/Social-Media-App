@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -51,7 +52,6 @@ const Navbar = () => {
 
   return (
     <div className="flex h-24 items-center justify-between gap-6">
-
       {/* LEFT */}
       <div className="shrink-0">
         <Link
@@ -64,18 +64,14 @@ const Navbar = () => {
 
       {/* CENTER */}
       <div className="hidden min-w-0 flex-1 items-center justify-between md:flex">
-
         {/* LINKS */}
         <div className="flex gap-5 text-sm text-gray-600 lg:gap-6">
-
           {/* HOME */}
           <Link
             href="/"
             className="group flex items-center gap-2 whitespace-nowrap transition hover:text-purple-600"
           >
-            <House
-              className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600"
-            />
+            <House className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600" />
 
             <span>Homepage</span>
           </Link>
@@ -85,9 +81,7 @@ const Navbar = () => {
             href="/"
             className="group flex items-center gap-2 whitespace-nowrap transition hover:text-purple-600"
           >
-            <UsersRound
-              className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600"
-            />
+            <UsersRound className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600" />
 
             <span>Friends</span>
           </Link>
@@ -97,18 +91,14 @@ const Navbar = () => {
             href="/"
             className="group flex items-center gap-2 whitespace-nowrap transition hover:text-purple-600"
           >
-            <CirclePlay
-              className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600"
-            />
+            <CirclePlay className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600" />
 
             <span>Stories</span>
           </Link>
-
         </div>
 
         {/* SEARCH */}
         <div className="hidden items-center rounded-xl bg-slate-100 p-2 xl:flex">
-
           <input
             type="text"
             placeholder="Search..."
@@ -116,22 +106,17 @@ const Navbar = () => {
           />
 
           <Search className="h-4 w-4 text-gray-500" />
-
         </div>
-
       </div>
 
       {/* RIGHT */}
       <div className="flex shrink-0 items-center gap-3 lg:gap-5">
-
         {/* FRIEND REQUESTS */}
         <Link
           href="/friend-requests"
           className="group flex cursor-pointer rounded-full p-2 transition hover:bg-purple-50"
         >
-          <UserRoundPlus
-            className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
-          />
+          <UserRoundPlus className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600" />
         </Link>
 
         {/* MESSAGES */}
@@ -139,9 +124,7 @@ const Navbar = () => {
           href="/chat"
           className="group relative flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-purple-50"
         >
-          <MessagesSquare
-            className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
-          />
+          <MessagesSquare className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600" />
 
           {unreadMessagesCount > 0 && (
             <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
@@ -164,9 +147,7 @@ const Navbar = () => {
             }
             className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition hover:bg-purple-50"
           >
-            <BellRing
-              className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
-            />
+            <BellRing className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600" />
 
             {unreadCount > 0 && (
               <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
@@ -188,9 +169,8 @@ const Navbar = () => {
 
         {/* AUTH */}
         {!loading &&
-          (user ? (
+          user && (
             <div className="flex items-center gap-3">
-
               {/* PROFILE */}
               <Link
                 href={`/profile/${user.id}`}
@@ -210,7 +190,7 @@ const Navbar = () => {
                   />
                 </div>
 
-                <span className="hidden sm:block text-sm font-medium transition group-hover:text-purple-600">
+                <span className="hidden text-sm font-medium transition group-hover:text-purple-600 sm:block">
                   {user.name}
                 </span>
               </Link>
@@ -226,30 +206,12 @@ const Navbar = () => {
               >
                 Logout
               </button>
-
             </div>
-          ) : (
-            <div className="flex items-center gap-2 text-sm">
-
-              <CircleUserRound
-                className="h-5 w-5 text-gray-600"
-              />
-
-              <Link
-                href="/login"
-                className="whitespace-nowrap transition hover:text-purple-600"
-              >
-                Login/Register
-              </Link>
-
-            </div>
-          ))}
+          )}
 
         {/* MOBILE MENU */}
         <MobileMenu />
-
       </div>
-
     </div>
   );
 };
