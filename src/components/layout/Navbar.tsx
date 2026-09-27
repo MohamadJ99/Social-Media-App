@@ -1,9 +1,18 @@
 "use client";
-
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import {
+  BellRing,
+  CirclePlay,
+  House,
+  MessagesSquare,
+  Search,
+  UserRoundPlus,
+  UsersRound,
+} from "lucide-react";
+
 import MobileMenu from "./MobileMenu";
-import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Notifications from "../common/Notifications";
@@ -13,11 +22,14 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 const Navbar = () => {
   const router = useRouter();
   const { user, logout, loading } = useAuth();
+
   const { data: unreadData } = useUnreadNotificationsCount();
   const { count: unreadMessagesCount } = useUnreadMessagesCount();
 
   const unreadCount = unreadData?.count ?? 0;
+
   const [showNotifications, setShowNotifications] = useState(false);
+
   const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,115 +50,101 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="h-24 flex items-center justify-between gap-6" >
+    <div className="flex h-24 items-center justify-between gap-6">
 
       {/* LEFT */}
       <div className="shrink-0">
         <Link
           href="/"
-          className="font-bold text-xl text-blue-500 whitespace-nowrap"
+          className="whitespace-nowrap text-xl font-bold text-purple-600 transition hover:text-purple-700"
         >
           MJSOCIAL
         </Link>
       </div>
 
       {/* CENTER */}
-      <div className="hidden md:flex flex-1 items-center justify-between min-w-0">
+      <div className="hidden min-w-0 flex-1 items-center justify-between md:flex">
 
         {/* LINKS */}
-        <div className="flex gap-5 lg:gap-6 text-gray-600 text-sm">
+        <div className="flex gap-5 text-sm text-gray-600 lg:gap-6">
 
+          {/* HOME */}
           <Link
             href="/"
-            className="flex items-center gap-2 whitespace-nowrap hover:text-blue-500 transition"
+            className="group flex items-center gap-2 whitespace-nowrap transition hover:text-purple-600"
           >
-            <Image
-              src="/home.png"
-              alt="Homepage"
-              width={16}
-              height={16}
-              className="w-4 h-4"
+            <House
+              className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600"
             />
+
             <span>Homepage</span>
           </Link>
 
+          {/* FRIENDS */}
           <Link
             href="/"
-            className="flex items-center gap-2 whitespace-nowrap hover:text-blue-500 transition"
+            className="group flex items-center gap-2 whitespace-nowrap transition hover:text-purple-600"
           >
-            <Image
-              src="/friends.png"
-              alt="Friends"
-              width={16}
-              height={16}
-              className="w-4 h-4"
+            <UsersRound
+              className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600"
             />
+
             <span>Friends</span>
           </Link>
 
+          {/* STORIES */}
           <Link
             href="/"
-            className="flex items-center gap-2 whitespace-nowrap hover:text-blue-500 transition"
+            className="group flex items-center gap-2 whitespace-nowrap transition hover:text-purple-600"
           >
-            <Image
-              src="/stories.png"
-              alt="Stories"
-              width={16}
-              height={16}
-              className="w-4 h-4"
+            <CirclePlay
+              className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600"
             />
+
             <span>Stories</span>
           </Link>
 
         </div>
 
         {/* SEARCH */}
-        <div className="hidden xl:flex p-2 bg-slate-100 items-center rounded-xl">
+        <div className="hidden items-center rounded-xl bg-slate-100 p-2 xl:flex">
 
           <input
             type="text"
-            placeholder="search..."
-            className="bg-transparent outline-none text-sm w-40"
+            placeholder="Search..."
+            className="w-40 bg-transparent text-sm outline-none"
           />
 
-          <Image
-            src="/search.png"
-            alt="Search"
-            width={14}
-            height={14}
-          />
+          <Search className="h-4 w-4 text-gray-500" />
 
         </div>
 
       </div>
 
       {/* RIGHT */}
-      <div className="flex items-center gap-3 lg:gap-5 shrink-0">
+      <div className="flex shrink-0 items-center gap-3 lg:gap-5">
 
-        {/* PEOPLE */}
-        <div className="hidden sm:block cursor-pointer">
-          <Image
-            src="/people.png"
-            alt="People"
-            width={24}
-            height={24}
+        {/* FRIEND REQUESTS */}
+        <Link
+          href="/friend-requests"
+          className="group flex cursor-pointer rounded-full p-2 transition hover:bg-purple-50"
+        >
+          <UserRoundPlus
+            className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
           />
-        </div>
+        </Link>
 
         {/* MESSAGES */}
         <Link
           href="/chat"
-          className="relative flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-gray-100"
+          className="group relative flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-purple-50"
         >
-          <Image
-            src="/messages.png"
-            alt="Messages"
-            width={20}
-            height={20}
+          <MessagesSquare
+            className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
           />
 
           {unreadMessagesCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex min-w-5 h-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
               {unreadMessagesCount > 99
                 ? "99+"
                 : unreadMessagesCount}
@@ -155,62 +153,76 @@ const Navbar = () => {
         </Link>
 
         {/* NOTIFICATIONS */}
-        <div ref={notificationRef} className="relative">
+        <div
+          ref={notificationRef}
+          className="relative"
+        >
           <button
             type="button"
-            onClick={() => setShowNotifications((prev) => !prev)}
-            className="relative cursor-pointer"
+            onClick={() =>
+              setShowNotifications((prev) => !prev)
+            }
+            className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition hover:bg-purple-50"
           >
-            <Image
-              src="/notifications.png"
-              alt="Notifications"
-              width={20}
-              height={20}
+            <BellRing
+              className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
             />
 
             {unreadCount > 0 && (
-              <span className="absolute -right-2 -top-2 flex min-w-5 h-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                {unreadCount > 99 ? "99+" : unreadCount}
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {unreadCount > 99
+                  ? "99+"
+                  : unreadCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-8 z-50">
-              <Notifications onClose={() => setShowNotifications(false)} />
+            <div className="absolute right-0 top-10 z-50">
+              <Notifications
+                onClose={() => setShowNotifications(false)}
+              />
             </div>
           )}
         </div>
 
         {/* AUTH */}
-        {!loading && (
-          user ? (
+        {!loading &&
+          (user ? (
             <div className="flex items-center gap-3">
 
               {/* PROFILE */}
               <Link
                 href={`/profile/${user.id}`}
-                className="flex items-center gap-2 text-sm font-medium hover:text-blue-500 transition"
+                className="group flex items-center gap-2 rounded-full px-2 py-1 transition hover:bg-purple-50"
               >
-                <Image
-                  src="/login.png"
-                  alt="Profile"
-                  width={24}
-                  height={24}
-                />
+                <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                  <Image
+                    src={
+                      user.avatar
+                        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${user.avatar}`
+                        : "/default-avatar.png"
+                    }
+                    alt={user.name}
+                    fill
+                    sizes="32px"
+                    className="object-cover"
+                  />
+                </div>
 
-                <span className="whitespace-nowrap">
+                <span className="hidden sm:block text-sm font-medium transition group-hover:text-purple-600">
                   {user.name}
                 </span>
               </Link>
 
               {/* LOGOUT */}
               <button
+                type="button"
                 onClick={async () => {
                   await logout();
                   router.push("/login");
                 }}
-                className="hidden lg:block text-sm text-red-500 hover:text-red-600 cursor-pointer whitespace-nowrap"
+                className="hidden cursor-pointer whitespace-nowrap text-sm text-red-500 transition hover:text-red-600 lg:block"
               >
                 Logout
               </button>
@@ -219,30 +231,26 @@ const Navbar = () => {
           ) : (
             <div className="flex items-center gap-2 text-sm">
 
-              <Image
-                src="/login.png"
-                alt="Login"
-                width={20}
-                height={20}
+              <CircleUserRound
+                className="h-5 w-5 text-gray-600"
               />
 
               <Link
                 href="/login"
-                className="whitespace-nowrap hover:text-blue-500 transition"
+                className="whitespace-nowrap transition hover:text-purple-600"
               >
                 Login/Register
               </Link>
 
             </div>
-          )
-        )}
+          ))}
 
         {/* MOBILE MENU */}
         <MobileMenu />
 
       </div>
 
-    </div >
+    </div>
   );
 };
 

@@ -33,19 +33,19 @@ const MobileMenu = () => {
                 className="flex flex-col gap-[4.5px]"
             >
                 <div
-                    className={`h-1 w-6 origin-left rounded-sm bg-blue-500 transition duration-500 ease-in-out ${
+                    className={`h-1 w-6 origin-left rounded-sm bg-purple-600 transition duration-500 ease-in-out ${
                         isOpen ? "rotate-45" : ""
                     }`}
                 />
 
                 <div
-                    className={`h-1 w-6 rounded-sm bg-blue-500 transition duration-500 ease-in-out ${
+                    className={`h-1 w-6 rounded-sm bg-purple-600 transition duration-500 ease-in-out ${
                         isOpen ? "opacity-0" : ""
                     }`}
                 />
 
                 <div
-                    className={`h-1 w-6 origin-left rounded-sm bg-blue-500 transition duration-500 ease-in-out ${
+                    className={`h-1 w-6 origin-left rounded-sm bg-purple-600 transition duration-500 ease-in-out ${
                         isOpen ? "-rotate-45" : ""
                     }`}
                 />
@@ -54,19 +54,36 @@ const MobileMenu = () => {
             {/* MOBILE MENU */}
             {isOpen && (
                 <div className="absolute left-0 top-24 z-10 flex h-[calc(100vh-96px)] w-full flex-col items-center justify-center gap-8 bg-white text-xl font-medium">
-                    <Link href="/" onClick={closeMenu}>
+
+                    <Link
+                        href="/"
+                        onClick={closeMenu}
+                        className="transition hover:text-purple-600"
+                    >
                         Home
                     </Link>
 
-                    <Link href="/" onClick={closeMenu}>
+                    <Link
+                        href="/"
+                        onClick={closeMenu}
+                        className="transition hover:text-purple-600"
+                    >
                         Friends
                     </Link>
 
-                    <Link href="/" onClick={closeMenu}>
+                    <Link
+                        href="/"
+                        onClick={closeMenu}
+                        className="transition hover:text-purple-600"
+                    >
                         Groups
                     </Link>
 
-                    <Link href="/" onClick={closeMenu}>
+                    <Link
+                        href="/"
+                        onClick={closeMenu}
+                        className="transition hover:text-purple-600"
+                    >
                         Stories
                     </Link>
 
@@ -77,6 +94,7 @@ const MobileMenu = () => {
                     >
                         Logout
                     </button>
+
                 </div>
             )}
         </div>
