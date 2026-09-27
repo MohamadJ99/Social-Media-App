@@ -8,11 +8,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Notifications from "../common/Notifications";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 
 const Navbar = () => {
   const router = useRouter();
   const { user, logout, loading } = useAuth();
   const { data: unreadData } = useUnreadNotificationsCount();
+  const { count: unreadMessagesCount } = useUnreadMessagesCount();
 
   const unreadCount = unreadData?.count ?? 0;
   const [showNotifications, setShowNotifications] = useState(false);
@@ -134,7 +136,7 @@ const Navbar = () => {
         {/* MESSAGES */}
         <Link
           href="/chat"
-          className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-gray-100"
+          className="relative flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-gray-100"
         >
           <Image
             src="/messages.png"
@@ -142,6 +144,14 @@ const Navbar = () => {
             width={20}
             height={20}
           />
+
+          {unreadMessagesCount > 0 && (
+            <span className="absolute -right-1 -top-1 flex min-w-5 h-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+              {unreadMessagesCount > 99
+                ? "99+"
+                : unreadMessagesCount}
+            </span>
+          )}
         </Link>
 
         {/* NOTIFICATIONS */}
