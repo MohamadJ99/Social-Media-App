@@ -217,7 +217,20 @@ const Navbar = () => {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-10 z-50">
+            <div
+              className="
+      fixed
+      left-2
+      right-2
+      top-20
+      z-50
+      sm:absolute
+      sm:left-auto
+      sm:right-0
+      sm:top-10
+      sm:w-96
+    "
+            >
               <Notifications
                 onClose={() => setShowNotifications(false)}
               />

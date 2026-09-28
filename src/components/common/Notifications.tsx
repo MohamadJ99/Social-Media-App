@@ -1,6 +1,9 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import {
   useMarkNotificationAsRead,
   useNotifications,
@@ -21,17 +24,17 @@ const Notifications = ({ onClose }: NotificationsProps) => {
   const notifications = data?.data ?? [];
   const unreadCount = unreadData?.count ?? 0;
 
+  const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL;
+
   const handleNotificationClick = (
     notificationId: number,
     readAt: string | null,
     postId: number | null,
   ) => {
-    // Mark notification as read
     if (!readAt) {
       markAsRead(notificationId);
     }
 
-    // Navigate to the related post
     if (postId) {
       onClose();
       router.push(`/posts/${postId}`);
@@ -55,61 +58,92 @@ const Notifications = ({ onClose }: NotificationsProps) => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-96 rounded-lg bg-white shadow-lg">
+    <div className="flex max-h-[70vh] flex-col overflow-hidden rounded-lg bg-white text-sm shadow-md">
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
-        <h2 className="font-semibold text-gray-800">
+        <span className="font-medium text-gray-700">
           Notifications
-        </h2>
+        </span>
 
         {unreadCount > 0 && (
-          <span className="rounded-full bg-red-500 px-2 py-1 text-xs text-white">
-            {unreadCount}
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </div>
 
       {/* Notifications List */}
-      <div className="max-h-96 overflow-y-auto">
+      <div className="overflow-y-auto">
         {notifications.length === 0 ? (
-          <p className="p-4 text-center text-sm text-gray-500">
-            No notifications
-          </p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <p className="text-sm font-medium text-gray-700">
+              No notifications
+            </p>
+
+            <p className="mt-1 text-xs text-gray-400">
+              You are all caught up!
+            </p>
+          </div>
         ) : (
           notifications.map((notification) => {
-           
             const postId =
               notification.notifiable_type === "App\\Models\\Post"
                 ? notification.notifiable_id
                 : notification.post_id;
 
+            const avatarUrl = notification.actor?.avatar
+              ? `${storageUrl}/${notification.actor.avatar}`
+              : "/default-avatar.png";
+
             return (
-              <button
+              <div
                 key={notification.id}
-                type="button"
-                onClick={() =>
-                  handleNotificationClick(
-                    notification.id,
-                    notification.read_at,
-                    postId,
-                  )
-                }
-                className={`w-full border-b px-4 py-3 text-left transition hover:bg-gray-50 ${
+                className={`border-b px-4 py-3 transition hover:bg-purple-50 ${
                   !notification.read_at
-                    ? "bg-gray-100"
+                    ? "bg-purple-50/60"
                     : "bg-white"
                 }`}
               >
-                <p className="text-sm text-gray-800">
-                  {notification.message}
-                </p>
+                <div className="flex items-start gap-3">
+                  {/* Actor */}
+                  <Link
+                    href={`/profile/${notification.actor?.id}`}
+                    onClick={onClose}
+                    className="group shrink-0"
+                  >
+                    <Image
+                      src={avatarUrl}
+                      alt={notification.actor?.name ?? "User"}
+                      width={40}
+                      height={40}
+                      className="h-10 w-10 rounded-full object-cover transition group-hover:opacity-80"
+                    />
+                  </Link>
 
-                <span className="mt-1 block text-xs text-gray-400">
-                  {new Date(
-                    notification.created_at,
-                  ).toLocaleString()}
-                </span>
-              </button>
+                  {/* Notification Content */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleNotificationClick(
+                        notification.id,
+                        notification.read_at,
+                        postId,
+                      )
+                    }
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <p className="text-sm text-gray-800">
+                      {notification.message}
+                    </p>
+
+                    <span className="mt-1 block text-xs text-gray-400">
+                      {new Date(
+                        notification.created_at,
+                      ).toLocaleString()}
+                    </span>
+                  </button>
+                </div>
+              </div>
             );
           })
         )}
