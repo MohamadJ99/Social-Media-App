@@ -17,8 +17,10 @@ import MobileMenu from "./MobileMenu";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Notifications from "../common/Notifications";
+import FriendRequests from "../common/FriendRequests";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useIncomingFriendRequests } from "@/hooks/useIncomingFriendRequests";
 
 const Navbar = () => {
   const router = useRouter();
@@ -27,26 +29,45 @@ const Navbar = () => {
   const { data: unreadData } = useUnreadNotificationsCount();
   const { count: unreadMessagesCount } = useUnreadMessagesCount();
 
+  const { data: friendRequests = [] } = useIncomingFriendRequests();
+
+  const friendRequestsCount = friendRequests.length;
+
   const unreadCount = unreadData?.count ?? 0;
 
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const [showFriendRequests, setShowFriendRequests] = useState(false);
+
   const notificationRef = useRef<HTMLDivElement>(null);
+  const friendRequestsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
       if (
         notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
+        !notificationRef.current.contains(target)
       ) {
         setShowNotifications(false);
+      }
+
+      if (
+        friendRequestsRef.current &&
+        !friendRequestsRef.current.contains(target)
+      ) {
+        setShowFriendRequests(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
     };
   }, []);
 
@@ -112,12 +133,49 @@ const Navbar = () => {
       {/* RIGHT */}
       <div className="flex shrink-0 items-center gap-3 lg:gap-5">
         {/* FRIEND REQUESTS */}
-        <Link
-          href="/friend-requests"
-          className="group flex cursor-pointer rounded-full p-2 transition hover:bg-purple-50"
+        <div
+          ref={friendRequestsRef}
+          className="relative"
         >
-          <UserRoundPlus className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600" />
-        </Link>
+          <button
+            type="button"
+            onClick={() =>
+              setShowFriendRequests((prev) => !prev)
+            }
+            className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition hover:bg-purple-50"
+          >
+            <UserRoundPlus
+              className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
+            />
+
+            {friendRequestsCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {friendRequestsCount > 99
+                  ? "99+"
+                  : friendRequestsCount}
+              </span>
+            )}
+          </button>
+
+          {showFriendRequests && (
+            <div
+              className="
+      fixed
+      left-2
+      right-2
+      top-20
+      z-50
+      sm:absolute
+      sm:left-auto
+      sm:right-0
+      sm:top-11
+      sm:w-80
+    "
+            >
+              <FriendRequests />
+            </div>
+          )}
+        </div>
 
         {/* MESSAGES */}
         <Link

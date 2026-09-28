@@ -2,7 +2,6 @@
 
 import Ad from "../common/Ad";
 import Birthdays from "../common/Birthdays";
-import FriendRequests from "../common/FriendRequests";
 import UserInfoCard from "../profile/UserInfoCard";
 import UserMediaCard from "../profile/UserMediaCard";
 import { useUserProfile } from "@/hooks/useProfile";
@@ -31,7 +30,6 @@ const RightMenu = ({
         </>
       ) : null}
 
-      {(!userId || isOwnProfile) && <FriendRequests />}
 
       <Birthdays />
       <Ad size="md" />
