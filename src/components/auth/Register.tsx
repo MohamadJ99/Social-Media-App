@@ -1,321 +1,414 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/context/AuthContext";
+import useRegister from "@/hooks/useRegister";
+
+import { ApiError } from "@/lib/api";
+
+import type {
+  RegisterData,
+  RegisterValidationErrors,
+} from "@/types/auth";
+
+const INITIAL_FORM: RegisterData = {
+  name: "",
+  username: "",
+  email: "",
+  password: "",
+  password_confirmation: "",
+};
 
 const Register = () => {
-    const [form, setForm] = useState({
-        name: "",
-        username: "",
-        email: "",
-        password: "",
-        password_confirmation: "",
-    });
+  const router = useRouter();
 
-    const [message, setMessage] = useState("");
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value,
-        });
-    };
+  const {
+    mutateAsync: registerMutation,
+    isPending,
+  } = useRegister();
 
-    const handleSubmit = async (
-        e: React.FormEvent
-    ) => {
-        e.preventDefault();
+  const [form, setForm] =
+    useState<RegisterData>(INITIAL_FORM);
 
-        setMessage("");
-        setIsSuccess(false);
-        setLoading(true);
+  const [errors, setErrors] =
+    useState<RegisterValidationErrors>({});
 
-        try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/register`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                    body: JSON.stringify(form),
-                }
-            );
+  const [message, setMessage] = useState("");
 
-            const data = await response.json();
+  const passwordRequirements = {
+    minLength: form.password.length >= 8,
+    uppercase: /[A-Z]/.test(form.password),
+    lowercase: /[a-z]/.test(form.password),
+    number: /\d/.test(form.password),
+    symbol: /[^A-Za-z0-9\s]/.test(form.password),
+  };
 
-            if (!response.ok) {
-                if (data.errors) {
-                    const errors = Object.values(
-                        data.errors
-                    ).flat();
+  const passwordsMatch =
+    form.password_confirmation.length > 0 &&
+    form.password === form.password_confirmation;
 
-                    setMessage(errors.join(" "));
-                } else {
-                    setMessage(
-                        data.message ||
-                        "Registration failed"
-                    );
-                }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = e.target;
 
-                return;
-            }
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
-            // Success
-            setIsSuccess(true);
-            setMessage("Registration successful!");
+    setErrors((prev) => ({
+      ...prev,
+      [name]: undefined,
+    }));
 
-            // Clear form
-            setForm({
-                name: "",
-                username: "",
-                email: "",
-                password: "",
-                password_confirmation: "",
-            });
+    setMessage("");
+  };
 
-            setTimeout(() => {
-                setMessage("");
-                setIsSuccess(false);
-            }, 3000);
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
 
-        } catch (error) {
-            console.error(error);
+    setErrors({});
+    setMessage("");
 
-            setIsSuccess(false);
-            setMessage(
-                "Something went wrong. Please try again."
-            );
+    try {
+      const data = await registerMutation(form);
 
-        } finally {
-            setLoading(false);
+      login(data.token, data.user);
+
+      router.push("/");
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 422) {
+          setErrors(error.errors);
+          return;
         }
-    };
 
-    return (
-        <main className="auth-slide-left min-h-screen bg-white p-4 sm:p-6 lg:p-8">
+        setMessage(error.message);
+        return;
+      }
 
-            <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:min-h-[calc(100vh-3rem)] lg:min-h-[calc(100vh-4rem)]">
+      setMessage(
+        "Unable to connect to the server. Please try again."
+      );
+    }
+  };
 
-                {/* IMAGE SECTION */}
-                <div className="relative hidden w-1/2 lg:block">
+  return (
+    <main className="auth-slide-left min-h-screen bg-white p-4 sm:p-6 lg:p-8">
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:min-h-[calc(100vh-3rem)] lg:min-h-[calc(100vh-4rem)]">
 
-                    <Image
-                        src="/auth-illustration.png"
-                        alt="Social media illustration"
-                        fill
-                        priority
-                        sizes="50vw"
-                        className="object-contain p-8 xl:p-12"
-                    />
+        {/* IMAGE SECTION */}
+        <div className="relative hidden w-1/2 lg:block">
+          <Image
+            src="/auth-illustration.png"
+            alt="Social media illustration"
+            fill
+            priority
+            sizes="50vw"
+            className="object-contain p-8 xl:p-12"
+          />
+        </div>
 
-                </div>
+        {/* FORM SECTION */}
+        <div className="flex w-full items-center justify-center px-6 py-10 sm:px-10 lg:w-1/2 lg:px-14 xl:px-20">
+          <div className="w-full max-w-md">
 
-                {/* FORM SECTION */}
-                <div className="flex w-full items-center justify-center px-6 py-10 sm:px-10 lg:w-1/2 lg:px-14 xl:px-20">
-
-                    <div className="w-full max-w-md">
-
-                        {/* LOGO */}
-                        <div className="mb-7">
-
-                            <Link
-                                href="/"
-                                className="text-2xl font-bold text-purple-600 transition hover:text-purple-700"
-                            >
-                                MJ SOCIAL
-                            </Link>
-
-                        </div>
-
-                        {/* TITLE */}
-                        <div className="mb-7">
-
-                            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                                Create an account
-                            </h1>
-
-                            <p className="mt-2 text-sm text-gray-500">
-                                Join MJ SOCIAL and connect with your friends
-                            </p>
-
-                        </div>
-
-                        {/* FORM */}
-                        <form
-                            onSubmit={handleSubmit}
-                            className="flex flex-col gap-4"
-                        >
-
-                            {/* NAME */}
-                            <div className="flex flex-col gap-2">
-
-                                <label
-                                    htmlFor="name"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Name
-                                </label>
-
-                                <input
-                                    id="name"
-                                    type="text"
-                                    name="name"
-                                    placeholder="Enter your name"
-                                    value={form.name}
-                                    onChange={handleChange}
-                                    autoComplete="name"
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:ring-2 focus:ring-purple-100"
-                                />
-
-                            </div>
-
-                            {/* USERNAME */}
-                            <div className="flex flex-col gap-2">
-
-                                <label
-                                    htmlFor="username"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Username
-                                </label>
-
-                                <input
-                                    id="username"
-                                    type="text"
-                                    name="username"
-                                    placeholder="Enter your username"
-                                    value={form.username}
-                                    onChange={handleChange}
-                                    autoComplete="username"
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:ring-2 focus:ring-purple-100"
-                                />
-
-                            </div>
-
-                            {/* EMAIL */}
-                            <div className="flex flex-col gap-2">
-
-                                <label
-                                    htmlFor="email"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Email
-                                </label>
-
-                                <input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    placeholder="Enter your email"
-                                    value={form.email}
-                                    onChange={handleChange}
-                                    autoComplete="email"
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:ring-2 focus:ring-purple-100"
-                                />
-
-                            </div>
-
-                            {/* PASSWORD */}
-                            <div className="flex flex-col gap-2">
-
-                                <label
-                                    htmlFor="password"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Password
-                                </label>
-
-                                <input
-                                    id="password"
-                                    type="password"
-                                    name="password"
-                                    placeholder="Enter your password"
-                                    value={form.password}
-                                    onChange={handleChange}
-                                    autoComplete="new-password"
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:ring-2 focus:ring-purple-100"
-                                />
-
-                            </div>
-
-                            {/* CONFIRM PASSWORD */}
-                            <div className="flex flex-col gap-2">
-
-                                <label
-                                    htmlFor="password_confirmation"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Confirm Password
-                                </label>
-
-                                <input
-                                    id="password_confirmation"
-                                    type="password"
-                                    name="password_confirmation"
-                                    placeholder="Confirm your password"
-                                    value={form.password_confirmation}
-                                    onChange={handleChange}
-                                    autoComplete="new-password"
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:ring-2 focus:ring-purple-100"
-                                />
-
-                            </div>
-
-                            {/* REGISTER BUTTON */}
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="mt-2 w-full cursor-pointer rounded-xl bg-purple-600 py-3.5 font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300"
-                            >
-                                {loading
-                                    ? "Creating account..."
-                                    : "Register"}
-                            </button>
-
-                        </form>
-
-                        {/* MESSAGE */}
-                        {message && (
-                            <div
-                                className={`mt-5 rounded-xl px-4 py-3 text-center text-sm ${
-                                    isSuccess
-                                        ? "bg-green-50 text-green-700"
-                                        : "bg-red-50 text-red-700"
-                                }`}
-                            >
-                                {message}
-                            </div>
-                        )}
-
-                        {/* LOGIN */}
-                        <p className="mt-7 text-center text-sm text-gray-500">
-
-                            Already have an account?{" "}
-
-                            <Link
-                                href="/login"
-                                className="font-medium text-purple-600 transition hover:text-purple-700 hover:underline"
-                            >
-                                Login
-                            </Link>
-
-                        </p>
-
-                    </div>
-
-                </div>
-
+            {/* LOGO */}
+            <div className="mb-7">
+              <Link
+                href="/"
+                className="text-2xl font-bold text-purple-600 transition hover:text-purple-700"
+              >
+                MJ SOCIAL
+              </Link>
             </div>
 
-        </main>
-    );
+            {/* TITLE */}
+            <div className="mb-7">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Create an account
+              </h1>
+
+              <p className="mt-2 text-sm text-gray-500">
+                Join MJ SOCIAL and connect with your friends
+              </p>
+            </div>
+
+            {/* FORM */}
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-4"
+            >
+
+              {/* NAME */}
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="name"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Name
+                </label>
+
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  placeholder="Enter your name"
+                  value={form.name}
+                  onChange={handleChange}
+                  autoComplete="name"
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
+                    errors.name
+                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                  }`}
+                />
+
+                {errors.name && (
+                  <p className="text-xs text-red-500">
+                    {errors.name[0]}
+                  </p>
+                )}
+              </div>
+
+              {/* USERNAME */}
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="username"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Username
+                </label>
+
+                <input
+                  id="username"
+                  type="text"
+                  name="username"
+                  placeholder="Enter your username"
+                  value={form.username}
+                  onChange={handleChange}
+                  autoComplete="username"
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
+                    errors.username
+                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                  }`}
+                />
+
+                {errors.username && (
+                  <p className="text-xs text-red-500">
+                    {errors.username[0]}
+                  </p>
+                )}
+              </div>
+
+              {/* EMAIL */}
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Email
+                </label>
+
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={form.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
+                    errors.email
+                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                  }`}
+                />
+
+                {errors.email && (
+                  <p className="text-xs text-red-500">
+                    {errors.email[0]}
+                  </p>
+                )}
+              </div>
+
+              {/* PASSWORD */}
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Password
+                </label>
+
+                <input
+                  id="password"
+                  type="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  value={form.password}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
+                    errors.password
+                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                  }`}
+                />
+
+                {errors.password && (
+                  <p className="text-xs text-red-500">
+                    {errors.password[0]}
+                  </p>
+                )}
+
+                {/* PASSWORD REQUIREMENTS */}
+                {form.password && (
+                  <div className="mt-1 grid grid-cols-1 gap-1 text-xs sm:grid-cols-2">
+                    <p
+                      className={
+                        passwordRequirements.minLength
+                          ? "text-green-600"
+                          : "text-gray-400"
+                      }
+                    >
+                      ✓ At least 8 characters
+                    </p>
+
+                    <p
+                      className={
+                        passwordRequirements.uppercase
+                          ? "text-green-600"
+                          : "text-gray-400"
+                      }
+                    >
+                      ✓ One uppercase letter
+                    </p>
+
+                    <p
+                      className={
+                        passwordRequirements.lowercase
+                          ? "text-green-600"
+                          : "text-gray-400"
+                      }
+                    >
+                      ✓ One lowercase letter
+                    </p>
+
+                    <p
+                      className={
+                        passwordRequirements.number
+                          ? "text-green-600"
+                          : "text-gray-400"
+                      }
+                    >
+                      ✓ One number
+                    </p>
+
+                    <p
+                      className={
+                        passwordRequirements.symbol
+                          ? "text-green-600"
+                          : "text-gray-400"
+                      }
+                    >
+                      ✓ One special character
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* CONFIRM PASSWORD */}
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="password_confirmation"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Confirm Password
+                </label>
+
+                <input
+                  id="password_confirmation"
+                  type="password"
+                  name="password_confirmation"
+                  placeholder="Confirm your password"
+                  value={form.password_confirmation}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
+                    errors.password_confirmation
+                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                  }`}
+                />
+
+                {errors.password_confirmation && (
+                  <p className="text-xs text-red-500">
+                    {errors.password_confirmation[0]}
+                  </p>
+                )}
+
+                {form.password_confirmation && (
+                  <p
+                    className={`text-xs ${
+                      passwordsMatch
+                        ? "text-green-600"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {passwordsMatch
+                      ? "✓ Passwords match"
+                      : "Passwords do not match"}
+                  </p>
+                )}
+              </div>
+
+              {/* REGISTER BUTTON */}
+              <button
+                type="submit"
+                disabled={isPending}
+                className="mt-2 w-full cursor-pointer rounded-xl bg-purple-600 py-3.5 font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300"
+              >
+                {isPending
+                  ? "Creating account..."
+                  : "Register"}
+              </button>
+            </form>
+
+            {/* GENERAL ERROR */}
+            {message && (
+              <div className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+                {message}
+              </div>
+            )}
+
+            {/* LOGIN */}
+            <p className="mt-7 text-center text-sm text-gray-500">
+              Already have an account?{" "}
+
+              <Link
+                href="/login"
+                className="font-medium text-purple-600 transition hover:text-purple-700 hover:underline"
+              >
+                Login
+              </Link>
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 };
 
 export default Register;
