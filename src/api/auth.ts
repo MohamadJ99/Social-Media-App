@@ -5,6 +5,9 @@ import type {
   LoginCredentials,
   RegisterData,
   UserResponse,
+  ForgotPasswordData,
+  ResetPasswordData,
+  PasswordResetResponse,
 } from "@/types/auth";
 
 export const loginRequest = (
@@ -38,5 +41,25 @@ export const logoutRequest = (token: string): Promise<{ message: string }> => {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  });
+};
+
+
+
+export const forgotPasswordRequest = (
+  data: ForgotPasswordData
+): Promise<PasswordResetResponse> => {
+  return apiFetch<PasswordResetResponse>("/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
+export const resetPasswordRequest = (
+  data: ResetPasswordData
+): Promise<PasswordResetResponse> => {
+  return apiFetch<PasswordResetResponse>("/reset-password", {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 };

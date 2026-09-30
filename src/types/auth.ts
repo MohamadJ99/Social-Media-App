@@ -29,6 +29,29 @@ export type RegisterData = {
   password_confirmation: string;
 };
 
+export type ForgotPasswordData = {
+  email: string;
+};
+
+export type ResetPasswordData = {
+  email: string;
+  token: string;
+  password: string;
+  password_confirmation: string;
+};
+
+export type PasswordResetResponse = {
+  message: string;
+};
+
+export type ForgotPasswordValidationErrors = Partial<
+  Record<keyof ForgotPasswordData, string[]>
+>;
+
+export type ResetPasswordValidationErrors = Partial<
+  Record<keyof ResetPasswordData, string[]>
+>;
+
 export type RegisterValidationErrors = Partial<
   Record<keyof RegisterData, string[]>
 >;

@@ -148,11 +148,10 @@ const Login = () => {
                   value={form.email}
                   onChange={handleChange}
                   autoComplete="email"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
-                    errors.email
-                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                  }`}
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.email
+                    ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                    : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                    }`}
                 />
 
                 {errors.email && (
@@ -179,11 +178,10 @@ const Login = () => {
                   value={form.password}
                   onChange={handleChange}
                   autoComplete="current-password"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
-                    errors.password
-                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                  }`}
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.password
+                    ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                    : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                    }`}
                 />
 
                 {errors.password && (
@@ -191,6 +189,20 @@ const Login = () => {
                     {errors.password[0]}
                   </p>
                 )}
+              </div>
+
+              <div className="flex justify-end">
+
+                <Link
+                  href="/forgot-password"
+                  className="
+                    text-sm font-medium text-purple-600
+                    transition-colors
+                   hover:text-purple-800
+                    hover:underline"
+                >
+                  Forgot password?
+                </Link>
               </div>
 
               {/* LOGIN BUTTON */}
