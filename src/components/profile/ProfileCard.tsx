@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMyProfile } from "@/hooks/useProfile";
+import { useMyProfile } from "@/hooks/profile/useProfile";
 
 const ProfileCard = () => {
   const { data: user, isLoading, isError } = useMyProfile();

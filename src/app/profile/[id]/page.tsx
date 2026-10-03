@@ -2,13 +2,13 @@
 
 import { useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useFriends } from "@/hooks/useFriends";
+import { useFriends } from "@/hooks/friends/useFriends";
 import Feed from "@/components/post/Feed";
 import LeftMenu from "@/components/layout/LeftMenu";
 import RightMenu from "@/components/layout/RightMenu";
 import Image from "next/image";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
-import { useUserProfile } from "@/hooks/useProfile";
+import { useUserProfile } from "@/hooks/profile/useProfile";
 import FriendsList from "@/components/profile/FriendsList";
 import FriendRequests from "@/components/common/FriendRequests";
 import UserInfoCard from "@/components/profile/UserInfoCard";

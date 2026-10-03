@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useIncomingFriendRequests } from "@/hooks/useIncomingFriendRequests";
-import { useAcceptFriendRequest } from "@/hooks/useAcceptFriendRequest";
-import { useRejectFriendRequest } from "@/hooks/useRejectFriendRequest";
+import { useIncomingFriendRequests } from "@/hooks/friends/useIncomingFriendRequests";
+import { useAcceptFriendRequest } from "@/hooks/friends/useAcceptFriendRequest";
+import { useRejectFriendRequest } from "@/hooks/friends/useRejectFriendRequest";
 import { Check, X } from "lucide-react";
 
 const FriendRequests = () => {

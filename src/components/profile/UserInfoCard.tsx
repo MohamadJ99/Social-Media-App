@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { User } from "@/types/user";
-import { useSendFriendRequest } from "@/hooks/useSendFriendRequest";
-import { useCancelFriendRequest } from "@/hooks/useCancelFriendRequest";
-import { useRemoveFriend } from "@/hooks/useRemoveFriend";
+import { useSendFriendRequest } from "@/hooks/friends/useSendFriendRequest";
+import { useCancelFriendRequest } from "@/hooks/friends/useCancelFriendRequest";
+import { useRemoveFriend } from "@/hooks/friends/useRemoveFriend";
 
 
 type UserInfoCardProps = {

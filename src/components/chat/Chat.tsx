@@ -9,19 +9,19 @@ import {
 
 import { useRouter } from "next/navigation";
 
-import { useMessages } from "@/hooks/useMessages";
+import { useMessages } from "@/hooks/messages/useMessages";
 import { useAuth } from "@/context/AuthContext";
 import { sendMessage } from "@/api/messages";
 
 import {
     useConversationChannel,
     type RealtimeMessage,
-} from "@/hooks/useConversationChannel";
+} from "@/hooks/messages/useConversationChannel";
 
-import { useAddRealtimeMessage } from "@/hooks/useAddRealtimeMessage";
-import { useConversations } from "@/hooks/useConversations";
-import { useMessageMutations } from "@/hooks/useMessageMutations";
-import { useMarkConversationAsRead } from "@/hooks/useMarkConversationAsRead";
+import { useAddRealtimeMessage } from "@/hooks/messages/useAddRealtimeMessage";
+import { useConversations } from "@/hooks/messages/useConversations";
+import { useMessageMutations } from "@/hooks/messages/useMessageMutations";
+import { useMarkConversationAsRead } from "@/hooks/messages/useMarkConversationAsRead";
 
 type ChatProps = {
     conversationId: number;
@@ -503,7 +503,7 @@ const Chat = ({ conversationId }: ChatProps) => {
                 >
                     ←
                 </button>
-                
+
                 {/* Avatar */}
 
                 <div className="relative shrink-0">
@@ -651,8 +651,8 @@ const Chat = ({ conversationId }: ChatProps) => {
                             <div
                                 key={item.id}
                                 className={`flex items-end gap-2 ${isOwnMessage
-                                        ? "justify-end"
-                                        : "justify-start"
+                                    ? "justify-end"
+                                    : "justify-start"
                                     }`}
                             >
                                 {/* Other User Avatar */}
@@ -687,8 +687,8 @@ const Chat = ({ conversationId }: ChatProps) => {
 
                                 <div
                                     className={`group flex max-w-[75%] flex-col ${isOwnMessage
-                                            ? "items-end"
-                                            : "items-start"
+                                        ? "items-end"
+                                        : "items-start"
                                         }`}
                                 >
                                     {/* Edit Mode */}
@@ -769,8 +769,8 @@ const Chat = ({ conversationId }: ChatProps) => {
 
                                             <div
                                                 className={`rounded-2xl px-4 py-2.5 shadow-sm ${isOwnMessage
-                                                        ? "rounded-br-md bg-purple-600 text-white"
-                                                        : "rounded-bl-md bg-white text-gray-900"
+                                                    ? "rounded-br-md bg-purple-600 text-white"
+                                                    : "rounded-bl-md bg-white text-gray-900"
                                                     }`}
                                             >
                                                 <p className="break-words text-sm leading-6">
@@ -781,8 +781,8 @@ const Chat = ({ conversationId }: ChatProps) => {
 
                                                 <div
                                                     className={`mt-1 text-right text-[10px] ${isOwnMessage
-                                                            ? "text-purple-200"
-                                                            : "text-gray-400"
+                                                        ? "text-purple-200"
+                                                        : "text-gray-400"
                                                         }`}
                                                 >
                                                     {

@@ -18,9 +18,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Notifications from "../common/Notifications";
 import FriendRequests from "../common/FriendRequests";
-import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
-import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
-import { useIncomingFriendRequests } from "@/hooks/useIncomingFriendRequests";
+import { useUnreadNotificationsCount } from "@/hooks/notifications/useNotifications";
+import { useUnreadMessagesCount } from "@/hooks/messages/useUnreadMessagesCount";
+import { useIncomingFriendRequests } from "@/hooks/friends/useIncomingFriendRequests";
 
 const Navbar = () => {
   const router = useRouter();

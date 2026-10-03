@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 
-import useForgotPassword from "@/hooks/useForgotPassword";
+import useForgotPassword from "@/hooks/auth/useForgotPassword";
 import { ApiError } from "@/lib/api";
 
 import type {

@@ -12,9 +12,7 @@ import type {
     MessagesPage,
 } from "@/api/messages";
 
-import type {
-    Conversation,
-} from "@/api/conversations";
+import type { Conversation } from "@/types/conversation";
 
 export const useAddRealtimeMessage = (
     conversationId: number

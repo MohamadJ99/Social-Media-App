@@ -7,7 +7,7 @@ import {
   useUpdateProfile,
   useUpdateAvatar,
   useUpdateCoverImage,
-} from "@/hooks/useProfile";
+} from "@/hooks/profile/useProfile";
 
 type EditProfileProps = {
   name: string;

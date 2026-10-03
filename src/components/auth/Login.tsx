@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
-import useLogin from "@/hooks/useLogin";
+import useLogin from "@/hooks/auth/useLogin";
 
 import { ApiError } from "@/lib/api";
 

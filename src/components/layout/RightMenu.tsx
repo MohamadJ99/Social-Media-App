@@ -4,7 +4,7 @@ import Ad from "../common/Ad";
 import Birthdays from "../common/Birthdays";
 import UserInfoCard from "../profile/UserInfoCard";
 import UserMediaCard from "../profile/UserMediaCard";
-import { useUserProfile } from "@/hooks/useProfile";
+import { useUserProfile } from "@/hooks/profile/useProfile";
 
 type RightMenuProps = {
   userId?: string;
@@ -13,7 +13,7 @@ type RightMenuProps = {
 
 const RightMenu = ({
   userId,
-  isOwnProfile,
+  isOwnProfile=false,
 }: RightMenuProps) => {
   const { data: user } = useUserProfile(Number(userId));
 

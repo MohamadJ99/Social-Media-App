@@ -8,7 +8,7 @@ import {
   useMarkNotificationAsRead,
   useNotifications,
   useUnreadNotificationsCount,
-} from "@/hooks/useNotifications";
+} from "@/hooks/notifications/useNotifications";
 
 type NotificationsProps = {
   onClose: () => void;
@@ -98,11 +98,10 @@ const Notifications = ({ onClose }: NotificationsProps) => {
             return (
               <div
                 key={notification.id}
-                className={`border-b px-4 py-3 transition hover:bg-purple-50 ${
-                  !notification.read_at
+                className={`border-b px-4 py-3 transition hover:bg-purple-50 ${!notification.read_at
                     ? "bg-purple-50/60"
                     : "bg-white"
-                }`}
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   {/* Actor */}

@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import useResetPassword from "@/hooks/useResetPassword";
+import useResetPassword from "@/hooks/auth/useResetPassword";
 import { ApiError } from "@/lib/api";
 
 import type { ResetPasswordValidationErrors } from "@/types/auth";
@@ -108,11 +108,10 @@ const ResetPassword = () => {
 
       {message && (
         <div
-          className={`mb-5 rounded-lg p-3 text-sm ${
-            resetPasswordMutation.isSuccess
-              ? "bg-green-50 text-green-700"
-              : "bg-red-50 text-red-600"
-          }`}
+          className={`mb-5 rounded-lg p-3 text-sm ${resetPasswordMutation.isSuccess
+            ? "bg-green-50 text-green-700"
+            : "bg-red-50 text-red-600"
+            }`}
         >
           {message}
         </div>
@@ -237,11 +236,10 @@ const ResetPassword = () => {
 
           {passwordConfirmation && (
             <p
-              className={`mt-1.5 text-sm ${
-                passwordsMatch
-                  ? "text-green-600"
-                  : "text-red-500"
-              }`}
+              className={`mt-1.5 text-sm ${passwordsMatch
+                ? "text-green-600"
+                : "text-red-500"
+                }`}
             >
               {passwordsMatch
                 ? "Passwords match"

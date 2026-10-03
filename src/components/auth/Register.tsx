@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
-import useRegister from "@/hooks/useRegister";
+import useRegister from "@/hooks/auth/useRegister";
 
 import { ApiError } from "@/lib/api";
 
@@ -166,11 +166,10 @@ const Register = () => {
                   value={form.name}
                   onChange={handleChange}
                   autoComplete="name"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
-                    errors.name
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.name
                       ? "border-red-400 focus:border-red-400 focus:ring-red-100"
                       : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                  }`}
+                    }`}
                 />
 
                 {errors.name && (
@@ -197,11 +196,10 @@ const Register = () => {
                   value={form.username}
                   onChange={handleChange}
                   autoComplete="username"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
-                    errors.username
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.username
                       ? "border-red-400 focus:border-red-400 focus:ring-red-100"
                       : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                  }`}
+                    }`}
                 />
 
                 {errors.username && (
@@ -228,11 +226,10 @@ const Register = () => {
                   value={form.email}
                   onChange={handleChange}
                   autoComplete="email"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
-                    errors.email
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.email
                       ? "border-red-400 focus:border-red-400 focus:ring-red-100"
                       : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                  }`}
+                    }`}
                 />
 
                 {errors.email && (
@@ -259,11 +256,10 @@ const Register = () => {
                   value={form.password}
                   onChange={handleChange}
                   autoComplete="new-password"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
-                    errors.password
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.password
                       ? "border-red-400 focus:border-red-400 focus:ring-red-100"
                       : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                  }`}
+                    }`}
                 />
 
                 {errors.password && (
@@ -345,11 +341,10 @@ const Register = () => {
                   value={form.password_confirmation}
                   onChange={handleChange}
                   autoComplete="new-password"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${
-                    errors.password_confirmation
+                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.password_confirmation
                       ? "border-red-400 focus:border-red-400 focus:ring-red-100"
                       : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                  }`}
+                    }`}
                 />
 
                 {errors.password_confirmation && (
@@ -360,11 +355,10 @@ const Register = () => {
 
                 {form.password_confirmation && (
                   <p
-                    className={`text-xs ${
-                      passwordsMatch
+                    className={`text-xs ${passwordsMatch
                         ? "text-green-600"
                         : "text-red-500"
-                    }`}
+                      }`}
                   >
                     {passwordsMatch
                       ? "✓ Passwords match"

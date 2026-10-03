@@ -1,10 +1,20 @@
 import { apiFetch } from "@/lib/api";
 
+import type { PostType, PostsResponse } from "@/types/post";
+
+type GetPostsResponse = {
+  posts: PostsResponse;
+};
+
+type GetPostResponse = {
+  post: PostType;
+};
+
 export const getPosts = async (
   token: string,
   page: number = 1,
   userId?: number,
-) => {
+): Promise<PostsResponse> => {
   const params = new URLSearchParams({
     page: String(page),
   });
@@ -13,7 +23,7 @@ export const getPosts = async (
     params.set("user_id", String(userId));
   }
 
-  const data = await apiFetch(`/posts?${params.toString()}`, {
+  const data = await apiFetch<GetPostsResponse>(`/posts?${params.toString()}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -23,8 +33,11 @@ export const getPosts = async (
   return data.posts;
 };
 
-export const getPost = async (token: string, postId: number) => {
-  const data = await apiFetch(`/posts/${postId}`, {
+export const getPost = async (
+  token: string,
+  postId: number,
+): Promise<PostType> => {
+  const data = await apiFetch<GetPostResponse>(`/posts/${postId}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,

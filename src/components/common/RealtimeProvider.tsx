@@ -1,6 +1,6 @@
 "use client";
 
-import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
+import { useRealtimeConversations } from "@/hooks/messages/useRealtimeConversations";
 
 const RealtimeProvider = () => {
     useRealtimeConversations();

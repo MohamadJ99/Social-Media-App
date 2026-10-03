@@ -15,7 +15,7 @@ import {
 } from "@/api/comments";
 
 import CommentItem from "./CommentItem";
-import { useEmojiInput } from "@/hooks/useEmojiInput";
+import { useEmojiInput } from "@/hooks/shared/useEmojiInput";
 import EmojiPicker from "emoji-picker-react";
 
 type CommentsProps = {

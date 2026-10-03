@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { useConversations } from "@/hooks/useConversations";
+import { useConversations } from "@/hooks/messages/useConversations";
 
 import ConversationItem from "./ConversationItem";
 
@@ -115,7 +115,7 @@ const ConversationList = ({
                 <p className="mt-1 text-sm text-gray-500">
                     {conversations.length}{" "}
                     {conversations.length ===
-                    1
+                        1
                         ? "conversation"
                         : "conversations"}
                 </p>

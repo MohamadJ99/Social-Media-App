@@ -24,7 +24,7 @@ import {
 
 import Link from "next/link";
 
-import { useEmojiInput } from "@/hooks/useEmojiInput";
+import { useEmojiInput } from "@/hooks/shared/useEmojiInput";
 import EmojiPickerButton from "@/components/post/EmojiPickerButton";
 
 type CommentItemProps = {

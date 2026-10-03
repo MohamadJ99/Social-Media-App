@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Post from "@/components/post/Post";
-import { usePost } from "@/hooks/usePost";
+import { usePost } from "@/hooks/posts/usePost";
 
 const PostPage = () => {
   const params = useParams();
