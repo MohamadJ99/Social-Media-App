@@ -65,3 +65,23 @@ export const createStory = async (
     body: formData,
   });
 };
+
+
+type DeleteStoryResponse = {
+  message: string;
+};
+
+export const deleteStory = async (
+  token: string,
+  storyId: number
+): Promise<DeleteStoryResponse> => {
+  return apiFetch<DeleteStoryResponse>(
+    `/stories/${storyId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
