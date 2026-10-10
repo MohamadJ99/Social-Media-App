@@ -4,6 +4,7 @@ import type {
   Story,
   StoryGroup,
   StoryVisibility,
+  StoryViewersResponse
 } from "@/types/story";
 
 type CreateStoryResponse = {
@@ -79,6 +80,21 @@ export const deleteStory = async (
     `/stories/${storyId}`,
     {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const getStoryViewers = async (
+  token: string,
+  storyId: number
+): Promise<StoryViewersResponse> => {
+  return apiFetch<StoryViewersResponse>(
+    `/stories/${storyId}/viewers`,
+    {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },

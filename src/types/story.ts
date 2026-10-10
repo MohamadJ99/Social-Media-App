@@ -40,3 +40,17 @@ export type StoryGroup = {
 export type StoriesResponse = {
   data: StoryGroup[];
 };
+
+
+export type StoryViewer = {
+  id: number;
+  name: string;
+  username: string;
+  avatar: string | null;
+  viewed_at: string;
+};
+
+export type StoryViewersResponse = {
+  views_count: number;
+  viewers: StoryViewer[];
+};

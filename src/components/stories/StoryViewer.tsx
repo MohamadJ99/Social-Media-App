@@ -9,11 +9,13 @@ import {
 } from "react";
 
 import { useDeleteStory } from "@/hooks/stories/useDeleteStory";
+import { useStoryViewers } from "@/hooks/stories/useStoryViewers";
 import { useViewStory } from "@/hooks/stories/useViewStory";
 
 import type {
   Story,
   StoryGroup,
+  StoryViewersResponse,
 } from "@/types/story";
 
 type StoryViewerProps = {
@@ -66,15 +68,23 @@ const StoryViewer = ({
     setIsDeleteModalOpen,
   ] = useState(false);
 
-  const [deleteError, setDeleteError] =
-    useState<string | null>(null);
+  const [
+    isViewersOpen,
+    setIsViewersOpen,
+  ] = useState(false);
+
+  const [
+    deleteError,
+    setDeleteError,
+  ] = useState<string | null>(null);
 
   const videoRef =
     useRef<HTMLVideoElement | null>(null);
 
   const imageElapsedRef = useRef(0);
 
-  const currentGroup = groups[groupIndex];
+  const currentGroup =
+    groups[groupIndex];
 
   const currentStory =
     currentGroup?.stories[storyIndex];
@@ -82,56 +92,76 @@ const StoryViewer = ({
   const canDeleteStory =
     currentGroup?.is_current_user ?? false;
 
-  const resetStoryState = useCallback(() => {
-    setProgress(0);
-    setIsPaused(false);
-    setIsMediaLoading(true);
-    setHasMediaError(false);
+  const canViewViewers =
+    currentGroup?.is_current_user ?? false;
 
-    imageElapsedRef.current = 0;
-  }, []);
+  const {
+    data: viewersData,
+    isLoading: isViewersLoading,
+    isError: isViewersError,
+  } = useStoryViewers(
+    currentStory?.id ?? null,
+    isViewersOpen &&
+      canViewViewers
+  );
 
-  const goToNext = useCallback(() => {
-    if (!currentGroup) {
-      return;
-    }
+  const isOverlayOpen =
+    isDeleteModalOpen ||
+    isViewersOpen;
 
-    resetStoryState();
+  const resetStoryState =
+    useCallback(() => {
+      setProgress(0);
+      setIsPaused(false);
+      setIsMediaLoading(true);
+      setHasMediaError(false);
 
-    const hasNextStory =
-      storyIndex <
-      currentGroup.stories.length - 1;
+      imageElapsedRef.current = 0;
+    }, []);
 
-    if (hasNextStory) {
-      setStoryIndex(
-        (current) => current + 1
-      );
+  const goToNext =
+    useCallback(() => {
+      if (!currentGroup) {
+        return;
+      }
 
-      return;
-    }
+      resetStoryState();
 
-    const hasNextGroup =
-      groupIndex < groups.length - 1;
+      const hasNextStory =
+        storyIndex <
+        currentGroup.stories.length - 1;
 
-    if (hasNextGroup) {
-      setGroupIndex(
-        (current) => current + 1
-      );
+      if (hasNextStory) {
+        setStoryIndex(
+          (current) => current + 1
+        );
 
-      setStoryIndex(0);
+        return;
+      }
 
-      return;
-    }
+      const hasNextGroup =
+        groupIndex <
+        groups.length - 1;
 
-    onClose();
-  }, [
-    currentGroup,
-    storyIndex,
-    groupIndex,
-    groups.length,
-    onClose,
-    resetStoryState,
-  ]);
+      if (hasNextGroup) {
+        setGroupIndex(
+          (current) => current + 1
+        );
+
+        setStoryIndex(0);
+
+        return;
+      }
+
+      onClose();
+    }, [
+      currentGroup,
+      storyIndex,
+      groupIndex,
+      groups.length,
+      onClose,
+      resetStoryState,
+    ]);
 
   const goToPrevious =
     useCallback(() => {
@@ -150,7 +180,9 @@ const StoryViewer = ({
           groupIndex - 1;
 
         const previousGroup =
-          groups[previousGroupIndex];
+          groups[
+            previousGroupIndex
+          ];
 
         setGroupIndex(
           previousGroupIndex
@@ -158,8 +190,8 @@ const StoryViewer = ({
 
         setStoryIndex(
           Math.max(
-            previousGroup.stories.length -
-              1,
+            previousGroup.stories
+              .length - 1,
             0
           )
         );
@@ -191,32 +223,47 @@ const StoryViewer = ({
     setIsPaused(false);
   };
 
-  const handleDeleteStory = async () => {
-    if (
-      !currentStory ||
-      !canDeleteStory ||
-      isDeleting
-    ) {
+  const handleDeleteStory =
+    async () => {
+      if (
+        !currentStory ||
+        !canDeleteStory ||
+        isDeleting
+      ) {
+        return;
+      }
+
+      setDeleteError(null);
+
+      try {
+        await deleteStory(
+          currentStory.id
+        );
+
+        setIsDeleteModalOpen(false);
+
+        onClose();
+      } catch (error) {
+        setDeleteError(
+          error instanceof Error
+            ? error.message
+            : "Unable to delete story."
+        );
+      }
+    };
+
+  const openViewersPanel = () => {
+    if (!canViewViewers) {
       return;
     }
 
-    setDeleteError(null);
+    setIsPaused(true);
+    setIsViewersOpen(true);
+  };
 
-    try {
-      await deleteStory(
-        currentStory.id
-      );
-
-      setIsDeleteModalOpen(false);
-
-      onClose();
-    } catch (error) {
-      setDeleteError(
-        error instanceof Error
-          ? error.message
-          : "Unable to delete story."
-      );
-    }
+  const closeViewersPanel = () => {
+    setIsViewersOpen(false);
+    setIsPaused(false);
   };
 
   useEffect(() => {
@@ -286,7 +333,9 @@ const StoryViewer = ({
       }, 50);
 
     return () => {
-      window.clearInterval(interval);
+      window.clearInterval(
+        interval
+      );
     };
   }, [
     currentStory,
@@ -304,7 +353,10 @@ const StoryViewer = ({
           event.key === "Escape" &&
           !isDeleting
         ) {
-          setIsDeleteModalOpen(false);
+          setIsDeleteModalOpen(
+            false
+          );
+
           setDeleteError(null);
           setIsPaused(false);
         }
@@ -312,20 +364,35 @@ const StoryViewer = ({
         return;
       }
 
-      if (event.key === "Escape") {
+      if (isViewersOpen) {
+        if (
+          event.key === "Escape"
+        ) {
+          setIsViewersOpen(false);
+          setIsPaused(false);
+        }
+
+        return;
+      }
+
+      if (
+        event.key === "Escape"
+      ) {
         onClose();
         return;
       }
 
       if (
-        event.key === "ArrowRight"
+        event.key ===
+        "ArrowRight"
       ) {
         goToNext();
         return;
       }
 
       if (
-        event.key === "ArrowLeft"
+        event.key ===
+        "ArrowLeft"
       ) {
         goToPrevious();
       }
@@ -348,6 +415,7 @@ const StoryViewer = ({
     onClose,
     isDeleteModalOpen,
     isDeleting,
+    isViewersOpen,
   ]);
 
   useEffect(() => {
@@ -386,30 +454,22 @@ const StoryViewer = ({
         <div
           className="relative h-full w-full overflow-hidden bg-black md:rounded-xl"
           onPointerDown={() => {
-            if (
-              !isDeleteModalOpen
-            ) {
+            if (!isOverlayOpen) {
               setIsPaused(true);
             }
           }}
           onPointerUp={() => {
-            if (
-              !isDeleteModalOpen
-            ) {
+            if (!isOverlayOpen) {
               setIsPaused(false);
             }
           }}
           onPointerCancel={() => {
-            if (
-              !isDeleteModalOpen
-            ) {
+            if (!isOverlayOpen) {
               setIsPaused(false);
             }
           }}
           onPointerLeave={() => {
-            if (
-              !isDeleteModalOpen
-            ) {
+            if (!isOverlayOpen) {
               setIsPaused(false);
             }
           }}
@@ -455,6 +515,19 @@ const StoryViewer = ({
             </div>
 
             <div className="flex items-center gap-1">
+              {canViewViewers && (
+                <button
+                  type="button"
+                  onClick={
+                    openViewersPanel
+                  }
+                  aria-label="View story viewers"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-purple-500/20 hover:text-purple-300"
+                >
+                  <EyeIcon />
+                </button>
+              )}
+
               {canDeleteStory && (
                 <button
                   type="button"
@@ -520,8 +593,7 @@ const StoryViewer = ({
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
               <div className="px-6 text-center text-white">
                 <p className="text-lg font-semibold">
-                  Unable to load
-                  story
+                  Unable to load story
                 </p>
 
                 <p className="mt-2 text-sm text-white/60">
@@ -558,7 +630,7 @@ const StoryViewer = ({
             type="button"
             onClick={goToPrevious}
             disabled={
-              isDeleteModalOpen ||
+              isOverlayOpen ||
               (groupIndex === 0 &&
                 storyIndex === 0)
             }
@@ -570,14 +642,28 @@ const StoryViewer = ({
           <button
             type="button"
             onClick={goToNext}
-            disabled={
-              isDeleteModalOpen
-            }
+            disabled={isOverlayOpen}
             aria-label="Next story"
             className="absolute bottom-0 right-0 top-24 z-10 w-1/3 disabled:cursor-default"
           />
 
-          {/* Delete confirmation */}
+          {/* Viewers Panel */}
+          {isViewersOpen && (
+            <StoryViewersPanel
+              data={viewersData}
+              isLoading={
+                isViewersLoading
+              }
+              isError={
+                isViewersError
+              }
+              onClose={
+                closeViewersPanel
+              }
+            />
+          )}
+
+          {/* Delete Dialog */}
           {isDeleteModalOpen && (
             <DeleteStoryDialog
               isDeleting={
@@ -596,6 +682,201 @@ const StoryViewer = ({
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+/* ========================================
+   STORY VIEWERS PANEL
+======================================== */
+
+type StoryViewersPanelProps = {
+  data:
+    | StoryViewersResponse
+    | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  onClose: () => void;
+};
+
+const StoryViewersPanel = ({
+  data,
+  isLoading,
+  isError,
+  onClose,
+}: StoryViewersPanelProps) => {
+  const viewsCount =
+    data?.views_count ?? 0;
+
+  return (
+    <div
+      className="absolute inset-0 z-40 flex items-end bg-black/40 backdrop-blur-[2px]"
+      onClick={onClose}
+    >
+      <div
+        className="w-full overflow-hidden rounded-t-3xl bg-white shadow-2xl"
+        onClick={(event) =>
+          event.stopPropagation()
+        }
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-3">
+          <div className="h-1.5 w-10 rounded-full bg-gray-300" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">
+              Story viewers
+            </h3>
+
+            <p className="mt-0.5 text-xs text-gray-500">
+              {viewsCount}{" "}
+              {viewsCount === 1
+                ? "view"
+                : "views"}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close viewers"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-gray-500 transition hover:bg-purple-50 hover:text-purple-600"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="max-h-[55vh] overflow-y-auto overscroll-contain px-5 py-3">
+          {isLoading && (
+            <ViewersSkeleton />
+          )}
+
+          {isError && (
+            <div className="py-10 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500">
+                <span className="text-xl">
+                  !
+                </span>
+              </div>
+
+              <p className="mt-3 text-sm font-semibold text-gray-700">
+                Unable to load viewers
+              </p>
+
+              <p className="mt-1 text-xs text-gray-400">
+                Please try again
+                later.
+              </p>
+            </div>
+          )}
+
+          {!isLoading &&
+            !isError &&
+            data?.viewers.length ===
+              0 && (
+              <div className="py-12 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+                  <EyeIcon />
+                </div>
+
+                <p className="mt-3 text-sm font-semibold text-gray-700">
+                  No viewers yet
+                </p>
+
+                <p className="mt-1 text-xs text-gray-400">
+                  Views will appear
+                  here.
+                </p>
+              </div>
+            )}
+
+          {!isLoading &&
+            !isError &&
+            data?.viewers.map(
+              (viewer) => {
+                const avatarUrl =
+                  viewer.avatar
+                    ? `${storageUrl}/${viewer.avatar}`
+                    : "/default-avatar.png";
+
+                return (
+                  <div
+                    key={
+                      viewer.id
+                    }
+                    className="flex items-center gap-3 border-b border-gray-100 py-3 last:border-none"
+                  >
+                    <Image
+                      src={
+                        avatarUrl
+                      }
+                      alt={
+                        viewer.name
+                      }
+                      width={44}
+                      height={44}
+                      className="h-11 w-11 shrink-0 rounded-full object-cover"
+                    />
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-gray-900">
+                        {
+                          viewer.name
+                        }
+                      </p>
+
+                      <p className="truncate text-xs text-gray-500">
+                        @
+                        {
+                          viewer.username
+                        }
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 text-xs text-gray-400">
+                      {formatViewedTime(
+                        viewer.viewed_at
+                      )}
+                    </span>
+                  </div>
+                );
+              }
+            )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================
+   VIEWERS SKELETON
+======================================== */
+
+const ViewersSkeleton = () => {
+  return (
+    <div className="space-y-2">
+      {Array.from({
+        length: 4,
+      }).map((_, index) => (
+        <div
+          key={index}
+          className="flex animate-pulse items-center gap-3 py-2"
+        >
+          <div className="h-11 w-11 shrink-0 rounded-full bg-gray-200" />
+
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-28 rounded bg-gray-200" />
+
+            <div className="h-3 w-20 rounded bg-gray-100" />
+          </div>
+
+          <div className="h-3 w-8 rounded bg-gray-100" />
+        </div>
+      ))}
     </div>
   );
 };
@@ -789,8 +1070,7 @@ const StoryMedia = ({
     void video
       .play()
       .catch(() => {
-        // Autoplay may be blocked
-        // by the browser.
+        // Autoplay may be blocked.
       });
   }, [
     isPaused,
@@ -856,6 +1136,35 @@ const StoryMedia = ({
 };
 
 /* ========================================
+   EYE ICON
+======================================== */
+
+const EyeIcon = () => {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+      />
+
+      <circle
+        cx="12"
+        cy="12"
+        r="2.5"
+      />
+    </svg>
+  );
+};
+
+/* ========================================
    TRASH ICON
 ======================================== */
 
@@ -913,6 +1222,52 @@ const formatStoryTime = (
     );
 
   return `${hours}h`;
+};
+
+/* ========================================
+   FORMAT VIEWED TIME
+======================================== */
+
+const formatViewedTime = (
+  viewedAt: string
+) => {
+  const viewed =
+    new Date(viewedAt);
+
+  const now = new Date();
+
+  const difference =
+    now.getTime() -
+    viewed.getTime();
+
+  const minutes =
+    Math.floor(
+      difference / 60_000
+    );
+
+  if (minutes < 1) {
+    return "Just now";
+  }
+
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
+
+  const hours =
+    Math.floor(
+      minutes / 60
+    );
+
+  if (hours < 24) {
+    return `${hours}h`;
+  }
+
+  const days =
+    Math.floor(
+      hours / 24
+    );
+
+  return `${days}d`;
 };
 
 export default StoryViewer;
