@@ -22,8 +22,7 @@ const PostActions = ({
     loading,
 }: PostActionsProps) => {
     return (
-        <div className="mt-4 flex flex-wrap items-center gap-4 text-gray-400">
-
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
             {/* PHOTO */}
             <input
                 ref={fileInputRef}
@@ -36,19 +35,21 @@ const PostActions = ({
             <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex cursor-pointer items-center gap-2"
+                className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 text-gray-600 transition hover:bg-purple-50 hover:text-purple-600"
             >
                 <Image
                     src="/addimage.png"
-                    alt=""
+                    alt="Photo"
                     width={20}
                     height={20}
+                    className="opacity-80 transition hover:opacity-100"
                 />
-                Photo
+                <span className="font-medium">
+                    Photo
+                </span>
             </button>
 
             {/* VIDEO */}
-
             <input
                 ref={videoInputRef}
                 type="file"
@@ -56,53 +57,63 @@ const PostActions = ({
                 onChange={onVideoChange}
                 className="hidden"
             />
+
             <button
                 type="button"
                 onClick={() => videoInputRef.current?.click()}
-                className="flex cursor-pointer items-center gap-2"
+                className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 text-gray-600 transition hover:bg-purple-50 hover:text-purple-600"
             >
                 <Image
                     src="/addVideo.png"
-                    alt=""
+                    alt="Video"
                     width={20}
                     height={20}
+                    className="opacity-80 transition hover:opacity-100"
                 />
-                Video
+                <span className="font-medium">
+                    Video
+                </span>
             </button>
 
             {/* POLL */}
             <button
                 type="button"
-                className="flex cursor-pointer items-center gap-2"
+                className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 text-gray-600 transition hover:bg-purple-50 hover:text-purple-600"
             >
                 <Image
                     src="/poll.png"
-                    alt=""
+                    alt="Poll"
                     width={20}
                     height={20}
+                    className="opacity-80 transition hover:opacity-100"
                 />
-                Poll
+                <span className="font-medium">
+                    Poll
+                </span>
             </button>
 
             {/* EVENT */}
             <button
                 type="button"
-                className="flex cursor-pointer items-center gap-2"
+                className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 text-gray-600 transition hover:bg-purple-50 hover:text-purple-600"
             >
                 <Image
                     src="/addevent.png"
-                    alt=""
+                    alt="Event"
                     width={20}
                     height={20}
+                    className="opacity-80 transition hover:opacity-100"
                 />
-                Event
+                <span className="font-medium">
+                    Event
+                </span>
             </button>
 
             {/* POST */}
             <button
                 type="submit"
                 disabled={loading}
-                className="ml-auto cursor-pointer rounded-lg bg-blue-500 px-5 py-2 text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-300"
+                className="ml-auto cursor-pointer rounded-xl bg-purple-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300"
             >
                 {loading ? "Posting..." : "Post"}
             </button>

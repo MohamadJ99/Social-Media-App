@@ -190,8 +190,8 @@ const AddPost = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="What's on your mind?"
-              className="bg-slate-100 rounded-lg flex-1 p-2 outline-none resize-none focus:ring-2 focus:ring-blue-400"
               rows={3}
+              className="flex-1 resize-none rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 hover:border-purple-200 focus:border-purple-400 focus:bg-white focus:ring-2 focus:ring-purple-100"
             />
 
             <EmojiPickerButton
@@ -207,8 +207,8 @@ const AddPost = () => {
               onRemove={handleRemoveImage}
             />
           )}
-           
-           {/* SELECTED VIDEO */}
+
+          {/* SELECTED VIDEO */}
           {videoPreview && (
             <VideoPreview
               src={videoPreview}
