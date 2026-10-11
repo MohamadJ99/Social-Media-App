@@ -1,9 +1,10 @@
 "use client";
 
 import Ad from "../common/Ad";
-import Birthdays from "../common/Birthdays";
 import UserInfoCard from "../profile/UserInfoCard";
 import UserMediaCard from "../profile/UserMediaCard";
+
+import AIPostAssistant from "@/components/ai/AIPostAssistant";
 import { useUserProfile } from "@/hooks/profile/useProfile";
 
 type RightMenuProps = {
@@ -13,9 +14,11 @@ type RightMenuProps = {
 
 const RightMenu = ({
   userId,
-  isOwnProfile=false,
+  isOwnProfile = false,
 }: RightMenuProps) => {
-  const { data: user } = useUserProfile(Number(userId));
+  const { data: user } = useUserProfile(
+    Number(userId)
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -26,12 +29,15 @@ const RightMenu = ({
             isOwnProfile={isOwnProfile}
           />
 
-          <UserMediaCard userId={userId} />
+          <UserMediaCard
+            userId={userId}
+          />
         </>
       ) : null}
 
+      {/* Only show on non-profile pages */}
+      {!userId && <AIPostAssistant />}
 
-      <Birthdays />
       <Ad size="md" />
     </div>
   );
