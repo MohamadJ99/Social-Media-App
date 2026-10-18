@@ -15,6 +15,8 @@ import type {
   LoginValidationErrors,
 } from "@/types/auth";
 
+import PasswordField from "@/components/common/PasswordField";
+
 const Login = () => {
   const router = useRouter();
 
@@ -162,34 +164,16 @@ const Login = () => {
               </div>
 
               {/* PASSWORD */}
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-
-                <input
-                  id="password"
-                  type="password"
-                  name="password"
-                  placeholder="Enter your password"
-                  value={form.password}
-                  onChange={handleChange}
-                  autoComplete="current-password"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.password
-                    ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                    : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                    }`}
-                />
-
-                {errors.password && (
-                  <p className="text-xs text-red-500">
-                    {errors.password[0]}
-                  </p>
-                )}
-              </div>
+              <PasswordField
+                id="password"
+                name="password"
+                label="Password"
+                value={form.password}
+                onChange={handleChange}
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                error={errors.password?.[0]}
+              />
 
               <div className="flex justify-end">
 

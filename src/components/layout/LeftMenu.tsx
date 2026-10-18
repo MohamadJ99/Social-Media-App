@@ -47,8 +47,8 @@ const menuItems = [
   },
   {
     name: "Settings",
-    href: "/",
-    icon: "/settings.png"
+    href: "/settings",
+    icon: "/settings.png",
   }
 ];
 

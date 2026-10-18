@@ -65,3 +65,9 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #9333ea;
 }
+
+
+.custom-password-input::-ms-reveal,
+.custom-password-input::-ms-clear {
+  display: none;
+}

@@ -15,6 +15,10 @@ import type {
   RegisterValidationErrors,
 } from "@/types/auth";
 
+import PasswordField from "@/components/common/PasswordField";
+import PasswordRequirements from "@/components/common/PasswordRequirements";
+import { validatePassword } from "@/lib/password";
+
 const INITIAL_FORM: RegisterData = {
   name: "",
   username: "",
@@ -41,13 +45,8 @@ const Register = () => {
 
   const [message, setMessage] = useState("");
 
-  const passwordRequirements = {
-    minLength: form.password.length >= 8,
-    uppercase: /[A-Z]/.test(form.password),
-    lowercase: /[a-z]/.test(form.password),
-    number: /\d/.test(form.password),
-    symbol: /[^A-Za-z0-9\s]/.test(form.password),
-  };
+  const passwordRequirements =
+    validatePassword(form.password);
 
   const passwordsMatch =
     form.password_confirmation.length > 0 &&
@@ -167,8 +166,8 @@ const Register = () => {
                   onChange={handleChange}
                   autoComplete="name"
                   className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.name
-                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                    ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                    : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
                     }`}
                 />
 
@@ -197,8 +196,8 @@ const Register = () => {
                   onChange={handleChange}
                   autoComplete="username"
                   className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.username
-                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                    ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                    : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
                     }`}
                 />
 
@@ -227,8 +226,8 @@ const Register = () => {
                   onChange={handleChange}
                   autoComplete="email"
                   className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.email
-                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
+                    ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                    : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
                     }`}
                 />
 
@@ -241,117 +240,36 @@ const Register = () => {
 
               {/* PASSWORD */}
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-
-                <input
+                <PasswordField
                   id="password"
-                  type="password"
                   name="password"
-                  placeholder="Enter your password"
+                  label="Password"
                   value={form.password}
                   onChange={handleChange}
                   autoComplete="new-password"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.password
-                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                    }`}
+                  placeholder="Enter your password"
+                  error={errors.password?.[0]}
                 />
 
-                {errors.password && (
-                  <p className="text-xs text-red-500">
-                    {errors.password[0]}
-                  </p>
-                )}
-
-                {/* PASSWORD REQUIREMENTS */}
                 {form.password && (
-                  <div className="mt-1 grid grid-cols-1 gap-1 text-xs sm:grid-cols-2">
-                    <p
-                      className={
-                        passwordRequirements.minLength
-                          ? "text-green-600"
-                          : "text-gray-400"
-                      }
-                    >
-                      ✓ At least 8 characters
-                    </p>
-
-                    <p
-                      className={
-                        passwordRequirements.uppercase
-                          ? "text-green-600"
-                          : "text-gray-400"
-                      }
-                    >
-                      ✓ One uppercase letter
-                    </p>
-
-                    <p
-                      className={
-                        passwordRequirements.lowercase
-                          ? "text-green-600"
-                          : "text-gray-400"
-                      }
-                    >
-                      ✓ One lowercase letter
-                    </p>
-
-                    <p
-                      className={
-                        passwordRequirements.number
-                          ? "text-green-600"
-                          : "text-gray-400"
-                      }
-                    >
-                      ✓ One number
-                    </p>
-
-                    <p
-                      className={
-                        passwordRequirements.symbol
-                          ? "text-green-600"
-                          : "text-gray-400"
-                      }
-                    >
-                      ✓ One special character
-                    </p>
-                  </div>
+                  <PasswordRequirements
+                    checks={passwordRequirements}
+                  />
                 )}
               </div>
 
               {/* CONFIRM PASSWORD */}
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="password_confirmation"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Confirm Password
-                </label>
-
-                <input
+                <PasswordField
                   id="password_confirmation"
-                  type="password"
                   name="password_confirmation"
-                  placeholder="Confirm your password"
+                  label="Confirm Password"
                   value={form.password_confirmation}
                   onChange={handleChange}
                   autoComplete="new-password"
-                  className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2 ${errors.password_confirmation
-                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-purple-400 focus:ring-purple-100"
-                    }`}
+                  placeholder="Confirm your password"
+                  error={errors.password_confirmation?.[0]}
                 />
-
-                {errors.password_confirmation && (
-                  <p className="text-xs text-red-500">
-                    {errors.password_confirmation[0]}
-                  </p>
-                )}
 
                 {form.password_confirmation && (
                   <p
