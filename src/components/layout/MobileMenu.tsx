@@ -66,7 +66,7 @@ const MobileMenu = () => {
   ];
 
   return (
-    <div className="xl:hidden">
+    <div className="lg:hidden">
       {/* MENU BUTTON */}
       <button
         type="button"

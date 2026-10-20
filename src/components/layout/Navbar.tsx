@@ -14,18 +14,18 @@ import {
 
 import MobileMenu from "./MobileMenu";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
 import Notifications from "../common/Notifications";
 import FriendRequests from "../common/FriendRequests";
 import { useUnreadNotificationsCount } from "@/hooks/notifications/useNotifications";
 import { useUnreadMessagesCount } from "@/hooks/messages/useUnreadMessagesCount";
 import { useIncomingFriendRequests } from "@/hooks/friends/useIncomingFriendRequests";
 import UserSearch from "../common/UserSearch";
+import UserMenu from "./UserMenu";
 
 
 const Navbar = () => {
-  const router = useRouter();
-  const { user, logout, loading } = useAuth();
+ 
+  const { user, loading } = useAuth();
 
   const { data: unreadData } = useUnreadNotificationsCount();
   const { count: unreadMessagesCount } = useUnreadMessagesCount();
@@ -135,38 +135,38 @@ const Navbar = () => {
         <div className="hidden lg:block">
           <UserSearch variant="desktop" />
         </div>
-        </div>
+      </div>
 
-        {/* RIGHT */}
-        <div className="flex shrink-0 items-center gap-3 lg:gap-5">
-          {/* FRIEND REQUESTS */}
-          <div
-            ref={friendRequestsRef}
-            className="relative"
+      {/* RIGHT */}
+      <div className="flex shrink-0 items-center gap-3 lg:gap-5">
+        {/* FRIEND REQUESTS */}
+        <div
+          ref={friendRequestsRef}
+          className="relative"
+        >
+          <button
+            type="button"
+            onClick={() =>
+              setShowFriendRequests((prev) => !prev)
+            }
+            className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition hover:bg-purple-50"
           >
-            <button
-              type="button"
-              onClick={() =>
-                setShowFriendRequests((prev) => !prev)
-              }
-              className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition hover:bg-purple-50"
-            >
-              <UserRoundPlus
-                className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
-              />
+            <UserRoundPlus
+              className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600"
+            />
 
-              {friendRequestsCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                  {friendRequestsCount > 99
-                    ? "99+"
-                    : friendRequestsCount}
-                </span>
-              )}
-            </button>
+            {friendRequestsCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {friendRequestsCount > 99
+                  ? "99+"
+                  : friendRequestsCount}
+              </span>
+            )}
+          </button>
 
-            {showFriendRequests && (
-              <div
-                className="
+          {showFriendRequests && (
+            <div
+              className="
       fixed
       left-2
       right-2
@@ -178,54 +178,54 @@ const Navbar = () => {
       sm:top-11
       sm:w-80
     "
-              >
-                <FriendRequests />
-              </div>
-            )}
-          </div>
+            >
+              <FriendRequests />
+            </div>
+          )}
+        </div>
 
-          {/* MESSAGES */}
-          <Link
-            href="/chat"
-            className="group relative flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-purple-50"
+        {/* MESSAGES */}
+        <Link
+          href="/chat"
+          className="group relative flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-purple-50"
+        >
+          <MessagesSquare className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600" />
+
+          {unreadMessagesCount > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+              {unreadMessagesCount > 99
+                ? "99+"
+                : unreadMessagesCount}
+            </span>
+          )}
+        </Link>
+
+        {/* NOTIFICATIONS */}
+        <div
+          ref={notificationRef}
+          className="relative"
+        >
+          <button
+            type="button"
+            onClick={() =>
+              setShowNotifications((prev) => !prev)
+            }
+            className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition hover:bg-purple-50"
           >
-            <MessagesSquare className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600" />
+            <BellRing className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600" />
 
-            {unreadMessagesCount > 0 && (
+            {unreadCount > 0 && (
               <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                {unreadMessagesCount > 99
+                {unreadCount > 99
                   ? "99+"
-                  : unreadMessagesCount}
+                  : unreadCount}
               </span>
             )}
-          </Link>
+          </button>
 
-          {/* NOTIFICATIONS */}
-          <div
-            ref={notificationRef}
-            className="relative"
-          >
-            <button
-              type="button"
-              onClick={() =>
-                setShowNotifications((prev) => !prev)
-              }
-              className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition hover:bg-purple-50"
-            >
-              <BellRing className="h-5 w-5 text-gray-600 transition group-hover:text-purple-600" />
-
-              {unreadCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                  {unreadCount > 99
-                    ? "99+"
-                    : unreadCount}
-                </span>
-              )}
-            </button>
-
-            {showNotifications && (
-              <div
-                className="
+          {showNotifications && (
+            <div
+              className="
       fixed
       left-2
       right-2
@@ -237,61 +237,22 @@ const Navbar = () => {
       sm:top-10
       sm:w-96
     "
-              >
-                <Notifications
-                  onClose={() => setShowNotifications(false)}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* AUTH */}
-          {!loading &&
-            user && (
-              <div className="flex items-center gap-3">
-                {/* PROFILE */}
-                <Link
-                  href={`/profile/${user.id}`}
-                  className="group flex items-center gap-2 rounded-full px-2 py-1 transition hover:bg-purple-50"
-                >
-                  <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                    <Image
-                      src={
-                        user.avatar
-                          ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${user.avatar}`
-                          : "/default-avatar.png"
-                      }
-                      alt={user.name}
-                      fill
-                      sizes="32px"
-                      className="object-cover"
-                    />
-                  </div>
-
-                  <span className="hidden text-sm font-medium transition group-hover:text-purple-600 sm:block">
-                    {user.name}
-                  </span>
-                </Link>
-
-                {/* LOGOUT */}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await logout();
-                    router.push("/login");
-                  }}
-                  className="hidden cursor-pointer whitespace-nowrap text-sm text-red-500 transition hover:text-red-600 lg:block"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-
-          {/* MOBILE MENU */}
-          <MobileMenu />
+            >
+              <Notifications
+                onClose={() => setShowNotifications(false)}
+              />
+            </div>
+          )}
         </div>
+
+        {/* USER MENU */}
+        {!loading && user && <UserMenu />}
+
+        {/* MOBILE MENU */}
+        <MobileMenu />
       </div>
-      );
+    </div>
+  );
 };
 
-      export default Navbar;
+export default Navbar;
