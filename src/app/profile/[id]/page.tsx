@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useFriends } from "@/hooks/friends/useFriends";
 import Feed from "@/components/post/Feed";
@@ -14,6 +14,8 @@ import FriendRequests from "@/components/common/FriendRequests";
 import UserInfoCard from "@/components/profile/UserInfoCard";
 import UserMediaCard from "@/components/profile/UserMediaCard";
 import EditProfile from "@/components/profile/EditProfile";
+import { MessageCircle } from "lucide-react";
+import { useCreateConversation } from "@/hooks/messages/useCreateConversation";
 import { useState } from "react";
 
 const ProfilePage = () => {
@@ -21,6 +23,13 @@ const ProfilePage = () => {
 
   const params = useParams();
   const id = Number(params.id);
+
+  const router = useRouter();
+
+  const {
+    mutateAsync: createConversation,
+    isPending: isCreatingConversation,
+  } = useCreateConversation();
 
   const { user: currentUser } = useAuth();
 
@@ -57,7 +66,24 @@ const ProfilePage = () => {
 
   const coverUrl = user.cover_image
     ? `${storageUrl}/${user.cover_image}`
-    : "/default-cover.jpg";
+    : null;
+
+
+  const handleMessage = async () => {
+    try {
+      const conversation =
+        await createConversation(id);
+
+      router.push(
+        `/chat/${conversation.id}`
+      );
+    } catch (error) {
+      console.error(
+        "Failed to open conversation:",
+        error
+      );
+    }
+  };
 
 
   return (
@@ -76,15 +102,18 @@ const ProfilePage = () => {
             <div className="flex flex-col items-center justify-center">
 
               {/* COVER */}
-              <div className="w-full h-64 relative">
-
-                <Image
-                  src={coverUrl}
-                  alt="Cover image"
-                  fill
-                  sizes="100vw"
-                  className="rounded-md object-cover"
-                />
+              <div className="relative h-64 w-full">
+                {coverUrl ? (
+                  <Image
+                    src={coverUrl}
+                    alt={`${user.name}'s cover`}
+                    fill
+                    sizes="100vw"
+                    className="rounded-xl object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-700" />
+                )}
 
                 {/* PROFILE IMAGE */}
                 <Image
@@ -92,9 +121,8 @@ const ProfilePage = () => {
                   alt={user.name}
                   width={128}
                   height={128}
-                  className="w-32 h-32 rounded-full absolute left-0 right-0 m-auto -bottom-16 ring-4 ring-white object-cover"
+                  className="absolute -bottom-16 left-0 right-0 m-auto h-32 w-32 rounded-full object-cover ring-4 ring-white"
                 />
-
               </div>
 
               {/* NAME */}
@@ -102,13 +130,28 @@ const ProfilePage = () => {
                 {user.name}
               </h1>
 
-              {isOwnProfile && (
+              {isOwnProfile ? (
                 <button
                   type="button"
-                  onClick={() => setIsEditProfileOpen(true)}
-                  className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+                  onClick={() =>
+                    setIsEditProfileOpen(true)
+                  }
+                  className="rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-purple-700"
                 >
                   Edit Profile
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleMessage}
+                  disabled={isCreatingConversation}
+                  className="flex cursor-pointer items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300"
+                >
+                  <MessageCircle className="h-4 w-4" />
+
+                  {isCreatingConversation
+                    ? "Opening..."
+                    : "Message"}
                 </button>
               )}
 
