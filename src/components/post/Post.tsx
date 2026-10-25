@@ -3,26 +3,20 @@
 import Image from "next/image";
 import Comments from "./Comments";
 import { useState, useRef } from "react";
-import type { PostType, PostsResponse } from "@/types/post";
-import {
-  useMutation,
-  useQueryClient,
-  type InfiniteData,
-} from "@tanstack/react-query";
 
 import { useAuth } from "@/context/AuthContext";
 
-import {
-  deletePost,
-  updatePost,
-} from "@/api/posts";
+import type { PostType } from "@/types/post";
 
-import {
-  likePost,
-  unlikePost,
-} from "@/api/likes";
+import { useUpdatePost } from "@/hooks/posts/useUpdatePost";
+
+import { useDeletePost } from "@/hooks/posts/useDeletePost";
+
+import { useTogglePostLike } from "@/hooks/posts/useTogglePostLike";
 
 import Link from "next/link";
+
+import { formatRelativeTime } from "@/lib/date";
 
 
 type PostProps = {
@@ -30,139 +24,20 @@ type PostProps = {
 };
 
 const Post = ({ post }: PostProps) => {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
 
-  const queryClient = useQueryClient();
   const commentInputRef = useRef<HTMLInputElement | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(post.content ?? "");
 
   const isOwner = user?.id === post.user_id;
 
-  // Update post
 
-  const updateMutation = useMutation({
-    mutationFn: () => {
-      if (!token) {
-        throw new Error("Authentication required");
-      }
+  const updateMutation = useUpdatePost();
 
-      return updatePost(
-        token,
-        post.id,
-        content.trim()
-      );
-    },
+  const deleteMutation = useDeletePost();
 
-    onSuccess: () => {
-      setIsEditing(false);
-
-      queryClient.invalidateQueries({
-        queryKey: ["posts"],
-      });
-    },
-  });
-
-  // Delete post
-
-  const deleteMutation = useMutation({
-    mutationFn: () => {
-      if (!token) {
-        throw new Error("Authentication required");
-      }
-
-      return deletePost(token, post.id);
-    },
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["posts"],
-      });
-    },
-  });
-
-  // Like / unlike post
-
-  const likeMutation = useMutation({
-    mutationFn: async () => {
-      if (!token) {
-        throw new Error("Authentication required");
-      }
-
-      if (post.is_liked) {
-        return unlikePost(token, post.id);
-      }
-
-      return likePost(token, post.id);
-    },
-
-    onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: ["posts"],
-      });
-
-      const previousPosts =
-        queryClient.getQueryData<InfiniteData<PostsResponse>>([
-          "posts",
-        ]);
-
-      queryClient.setQueryData<InfiniteData<PostsResponse>>(
-        ["posts"],
-        (oldData) => {
-          if (!oldData) {
-            return oldData;
-          }
-
-          return {
-            ...oldData,
-
-            pages: oldData.pages.map((page) => ({
-              ...page,
-
-              data: page.data.map((currentPost) => {
-                if (currentPost.id !== post.id) {
-                  return currentPost;
-                }
-
-                const newIsLiked = !currentPost.is_liked;
-
-                return {
-                  ...currentPost,
-                  is_liked: newIsLiked,
-                  likes_count:
-                    currentPost.likes_count +
-                    (newIsLiked ? 1 : -1),
-                };
-              }),
-            })),
-          };
-        }
-      );
-
-      return {
-        previousPosts,
-      };
-    },
-
-    onError: (
-      _error,
-      _variables,
-      context
-    ) => {
-      if (context?.previousPosts) {
-        queryClient.setQueryData(
-          ["posts"],
-          context.previousPosts
-        );
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["posts"],
-      });
-    },
-  });
+  const likeMutation = useTogglePostLike(post);
 
   // Handlers
 
@@ -176,7 +51,17 @@ const Post = ({ post }: PostProps) => {
       return;
     }
 
-    updateMutation.mutate();
+    updateMutation.mutate(
+      {
+        postId: post.id,
+        content: trimmedContent,
+      },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+        },
+      }
+    );
   };
 
   const handleCancelEdit = () => {
@@ -217,9 +102,21 @@ const Post = ({ post }: PostProps) => {
               className="h-10 w-10 rounded-full object-cover"
             />
 
-            <span className="font-medium transition-colors hover:text-blue-500">
-              {post.user.name}
-            </span>
+            <div className="flex flex-col">
+              <span className="font-medium transition-colors hover:text-purple-600">
+                {post.user.name}
+              </span>
+
+              <time
+                dateTime={post.created_at}
+                title={new Date(
+                  post.created_at
+                ).toLocaleString()}
+                className="text-xs text-gray-500"
+              >
+                {formatRelativeTime(post.created_at)}
+              </time>
+            </div>
           </Link>
 
         </div>
@@ -244,7 +141,7 @@ const Post = ({ post }: PostProps) => {
             <button
               type="button"
               onClick={() =>
-                deleteMutation.mutate()
+                deleteMutation.mutate(post.id)
               }
               disabled={
                 deleteMutation.isPending ||
