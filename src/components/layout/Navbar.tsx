@@ -112,7 +112,7 @@ const Navbar = () => {
 
           {/* FRIENDS */}
           <Link
-            href="/"
+            href="/friends"
             className="group flex items-center gap-2 whitespace-nowrap transition hover:text-purple-600"
           >
             <UsersRound className="h-4 w-4 text-gray-500 transition group-hover:text-purple-600" />
