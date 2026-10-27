@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Comments from "./Comments";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { useAuth } from "@/context/AuthContext";
 
@@ -17,6 +17,7 @@ import { useTogglePostLike } from "@/hooks/posts/useTogglePostLike";
 import Link from "next/link";
 
 import { formatRelativeTime } from "@/lib/date";
+import { MoreHorizontal } from "lucide-react";
 
 
 type PostProps = {
@@ -27,8 +28,11 @@ const Post = ({ post }: PostProps) => {
   const { user } = useAuth();
 
   const commentInputRef = useRef<HTMLInputElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(post.content ?? "");
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isOwner = user?.id === post.user_id;
 
@@ -81,6 +85,37 @@ const Post = ({ post }: PostProps) => {
     ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${post.user.avatar}`
     : "/default-avatar.png";
 
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    const handleClickOutside = (
+      event: MouseEvent
+    ) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(
+          event.target as Node
+        )
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, [isMenuOpen]);
+
   return (
     <div className="flex flex-col gap-4">
 
@@ -121,39 +156,55 @@ const Post = ({ post }: PostProps) => {
 
         </div>
 
-        {/* Owner actionser */}
+        {/* Post actions */}
 
         {isOwner && (
-          <div className="flex items-center gap-3 text-sm">
-
-            {!isEditing && (
-              <button
-                type="button"
-                onClick={() =>
-                  setIsEditing(true)
-                }
-                className="cursor-pointer text-blue-500 hover:text-blue-700"
-              >
-                Edit
-              </button>
-            )}
-
+          <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={() =>
-                deleteMutation.mutate(post.id)
+                setIsMenuOpen((prev) => !prev)
               }
-              disabled={
-                deleteMutation.isPending ||
-                updateMutation.isPending
-              }
-              className="cursor-pointer text-red-500 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Post options"
+              aria-expanded={isMenuOpen}
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
             >
-              {deleteMutation.isPending
-                ? "Deleting..."
-                : "Delete"}
+              <MoreHorizontal className="h-5 w-5" />
             </button>
 
+            {isMenuOpen && (
+              <div className="absolute right-0 top-10 z-20 w-36 overflow-hidden rounded-xl border border-gray-100 bg-white py-1 shadow-lg">
+                {!isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditing(true);
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-50"
+                  >
+                    Edit
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    deleteMutation.mutate(post.id);
+                  }}
+                  disabled={
+                    deleteMutation.isPending ||
+                    updateMutation.isPending
+                  }
+                  className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {deleteMutation.isPending
+                    ? "Deleting..."
+                    : "Delete"}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
