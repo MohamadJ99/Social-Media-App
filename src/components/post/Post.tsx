@@ -17,7 +17,8 @@ import { useTogglePostLike } from "@/hooks/posts/useTogglePostLike";
 import Link from "next/link";
 
 import { formatRelativeTime } from "@/lib/date";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Flag } from "lucide-react";
+import ReportModal from "@/components/reports/ReportModal";
 
 
 type PostProps = {
@@ -33,6 +34,7 @@ const Post = ({ post }: PostProps) => {
   const [content, setContent] = useState(post.content ?? "");
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const isOwner = user?.id === post.user_id;
 
@@ -157,57 +159,68 @@ const Post = ({ post }: PostProps) => {
         </div>
 
         {/* Post actions */}
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            aria-label="Post options"
+            aria-expanded={isMenuOpen}
+            aria-haspopup="menu"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          >
+            <MoreHorizontal className="h-5 w-5" />
+          </button>
 
-        {isOwner && (
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() =>
-                setIsMenuOpen((prev) => !prev)
-              }
-              aria-label="Post options"
-              aria-expanded={isMenuOpen}
-              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
-            >
-              <MoreHorizontal className="h-5 w-5" />
-            </button>
+          {isMenuOpen && (
+            <div className="absolute right-0 top-10 z-20 w-40 overflow-hidden rounded-xl border border-gray-100 bg-white py-1 shadow-lg">
+              {isOwner ? (
+                <>
+                  {!isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditing(true);
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Edit
+                    </button>
+                  )}
 
-            {isMenuOpen && (
-              <div className="absolute right-0 top-10 z-20 w-36 overflow-hidden rounded-xl border border-gray-100 bg-white py-1 shadow-lg">
-                {!isEditing && (
                   <button
                     type="button"
                     onClick={() => {
-                      setIsEditing(true);
                       setIsMenuOpen(false);
+                      deleteMutation.mutate(post.id);
                     }}
-                    className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-50"
+                    disabled={
+                      deleteMutation.isPending ||
+                      updateMutation.isPending
+                    }
+                    className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
                   >
-                    Edit
+                    {deleteMutation.isPending
+                      ? "Deleting..."
+                      : "Delete"}
                   </button>
-                )}
-
+                </>
+              ) : (
                 <button
                   type="button"
                   onClick={() => {
                     setIsMenuOpen(false);
-                    deleteMutation.mutate(post.id);
+                    setIsReportOpen(true);
                   }}
-                  disabled={
-                    deleteMutation.isPending ||
-                    updateMutation.isPending
-                  }
-                  className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700"
                 >
-                  {deleteMutation.isPending
-                    ? "Deleting..."
-                    : "Delete"}
+                  <Flag size={16} />
+                  Report post
                 </button>
-              </div>
-            )}
-          </div>
-        )}
-
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -383,6 +396,15 @@ const Post = ({ post }: PostProps) => {
       {/* Comments */}
 
       <Comments postId={post.id} commentInputRef={commentInputRef} />
+
+      {isReportOpen && (
+        <ReportModal
+          isOpen={isReportOpen}
+          targetType="post"
+          targetId={post.id}
+          onClose={() => setIsReportOpen(false)}
+        />
+      )}
 
     </div>
   );

@@ -1,399 +1,458 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useState } from "react";
-import {
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import Link from "next/link";
+import { MoreHorizontal, Flag } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
-
-import {
-  createComment,
-  updateComment,
-  deleteComment,
-} from "@/api/comments";
-
-import type { Comment } from "@/types/comment"
-
-import {
-  likeComment,
-  unlikeComment,
-} from "@/api/likes";
-
-import Link from "next/link";
-
+import { useCommentActions } from "@/hooks/comments/useCommentActions";
 import { useEmojiInput } from "@/hooks/shared/useEmojiInput";
-import EmojiPickerButton from "@/components/post/EmojiPickerButton";
+
+import EmojiPickerButton from "./EmojiPickerButton";
+import ReportModal from "@/components/reports/ReportModal";
+import { formatRelativeTime } from "@/lib/date";
+
+import type { Comment } from "@/types/comment";
 
 type CommentItemProps = {
   comment: Comment;
   postId: number;
 };
 
-const CommentItem = ({
+export default function CommentItem({
   comment,
   postId,
-}: CommentItemProps) => {
-  const { user, token } = useAuth();
-  const queryClient = useQueryClient();
+}: CommentItemProps) {
+  const { user } = useAuth();
 
+  // Local UI state
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(comment.content);
 
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyContent, setReplyContent] = useState("");
 
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const isOwner = user?.id === comment.user_id;
+
+  // Comment mutations
+  const {
+    likeMutation,
+    updateMutation,
+    deleteMutation,
+    replyMutation,
+  } = useCommentActions({
+    commentId: comment.id,
+    postId,
+    isLiked: comment.is_liked,
+  });
+
+  // Emoji input
   const {
     inputRef: replyInputRef,
-    handleEmojiClick: handleReplyEmojiClick,
-  } = useEmojiInput(
-    replyContent,
-    setReplyContent
-  );
-  const isOwner = user?.id === comment.user_id;
+    handleEmojiClick,
+  } = useEmojiInput(replyContent, setReplyContent);
 
   const avatarUrl = comment.user.avatar
     ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${comment.user.avatar}`
     : "/default-avatar.png";
 
-  const refreshComments = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["comments", postId],
+  // Update comment
+  const handleUpdate = () => {
+    const trimmedContent = content.trim();
+
+    if (!trimmedContent || updateMutation.isPending) {
+      return;
+    }
+
+    updateMutation.mutate(trimmedContent, {
+      onSuccess: () => {
+        setIsEditing(false);
+      },
     });
   };
 
-  // LIKE
-  const likeMutation = useMutation({
-    mutationFn: () => {
-      if (!token) {
-        throw new Error("Authentication required");
-      }
-
-      return comment.is_liked
-        ? unlikeComment(token, comment.id)
-        : likeComment(token, comment.id);
-    },
-
-    onSuccess: refreshComments,
-  });
-
-  // UPDATE
-  const updateMutation = useMutation({
-    mutationFn: () => {
-      if (!token) {
-        throw new Error("Authentication required");
-      }
-
-      return updateComment(
-        token,
-        comment.id,
-        content.trim()
-      );
-    },
-
-    onSuccess: () => {
-      setIsEditing(false);
-      refreshComments();
-    },
-  });
-
-  // DELETE
-  const deleteMutation = useMutation({
-    mutationFn: () => {
-      if (!token) {
-        throw new Error("Authentication required");
-      }
-
-      return deleteComment(
-        token,
-        comment.id
-      );
-    },
-
-    onSuccess: () => {
-      refreshComments();
-
-      queryClient.invalidateQueries({
-        queryKey: ["posts"],
-      });
-    }
-  });
-
-  // REPLY
-  const replyMutation = useMutation({
-    mutationFn: () => {
-      if (!token) {
-        throw new Error("Authentication required");
-      }
-
-      return createComment(
-        token,
-        postId,
-        replyContent.trim(),
-        comment.id
-      );
-    },
-
-    onSuccess: () => {
-      setReplyContent("");
-      setShowReplyInput(false);
-      refreshComments();
-      queryClient.invalidateQueries({
-        queryKey: ["posts"],
-      });
-    },
-  });
-
-  const handleUpdate = () => {
-    if (!content.trim()) {
-      return;
-    }
-
-    updateMutation.mutate();
+  // Cancel edit
+  const handleCancelEdit = () => {
+    setContent(comment.content);
+    updateMutation.reset();
+    setIsEditing(false);
   };
 
+  // Submit reply
   const handleReply = () => {
-    if (!replyContent.trim()) {
+    const trimmedContent = replyContent.trim();
+
+    if (!trimmedContent || replyMutation.isPending) {
       return;
     }
 
-    replyMutation.mutate();
+    replyMutation.mutate(trimmedContent, {
+      onSuccess: () => {
+        setReplyContent("");
+        setShowReplyInput(false);
+      },
+    });
   };
+
+  // Cancel reply
+  const handleCancelReply = () => {
+    if (replyMutation.isPending) return;
+
+    setReplyContent("");
+    replyMutation.reset();
+    setShowReplyInput(false);
+  };
+
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isMenuOpen]);
 
   return (
     <div className="flex flex-col gap-4">
-
       {/* COMMENT */}
-
-      <div className="flex gap-4">
-
+      <div className="flex min-w-0 gap-3 sm:gap-4">
+        {/* Avatar */}
         <Link
           href={`/profile/${comment.user.id}`}
-          className="flex shrink-0 items-start"
+          className="shrink-0"
         >
           <Image
             src={avatarUrl}
             alt={`${comment.user.name}'s profile`}
             width={40}
             height={40}
-            className="h-10 w-10 cursor-pointer rounded-full object-cover"
+            className="h-10 w-10 rounded-full object-cover"
           />
         </Link>
 
-        <div className="flex-1">
-
+        <div className="min-w-0 flex-1">
           {/* HEADER */}
+          <div className="flex items-center justify-between gap-2">
 
-          <div className="flex items-center justify-between">
+            <div className="flex min-w-0 flex-col gap-1">
+              <Link
+                href={`/profile/${comment.user.id}`}
+                className="truncate font-medium text-gray-900 transition-colors hover:text-purple-600"
+              >
+                {comment.user.name}
+              </Link>
 
-            <Link
-              href={`/profile/${comment.user.id}`}
-              className="font-medium transition-colors hover:text-blue-500"
+              <time
+                dateTime={comment.created_at}
+                title={new Date(comment.created_at).toLocaleString()}
+                className="text-xs text-gray-500"
+              >
+                {formatRelativeTime(comment.created_at)}
+              </time>
+            </div>
+
+
+            {/* Comment actions dropdown */}
+            <div
+              ref={menuRef}
+              className="relative shrink-0"
             >
-              {comment.user.name}
-            </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen((prev) => !prev);
+                }}
+                aria-label="Comment options"
+                aria-haspopup="true"
+                aria-expanded={isMenuOpen}
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+              >
+                <MoreHorizontal
+                  size={18}
+                  aria-hidden="true"
+                />
+              </button>
 
-            {isOwner && (
-              <div className="flex gap-3 text-xs">
+              {isMenuOpen && (
+                <div className="absolute right-0 top-9 z-30 w-40 overflow-hidden rounded-xl border border-gray-100 bg-white py-1 shadow-lg">
+                  {isOwner ? (
+                    <>
+                      {!isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setContent(comment.content);
+                            updateMutation.reset();
+                            setIsEditing(true);
+                            setIsMenuOpen(false);
+                          }}
+                          disabled={
+                            updateMutation.isPending ||
+                            deleteMutation.isPending
+                          }
+                          className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Edit
+                        </button>
+                      )}
 
-                {!isEditing && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setIsEditing(true)
-                    }
-                    className="cursor-pointer text-blue-500 transition-colors hover:text-blue-700"
-                  >
-                    Edit
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    deleteMutation.mutate()
-                  }
-                  disabled={
-                    deleteMutation.isPending
-                  }
-                  className="cursor-pointer text-red-500 transition-colors hover:text-red-700"
-                >
-                  {deleteMutation.isPending
-                    ? "Deleting..."
-                    : "Delete"}
-                </button>
-
-              </div>
-            )}
-
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          deleteMutation.mutate();
+                        }}
+                        disabled={
+                          deleteMutation.isPending ||
+                          updateMutation.isPending
+                        }
+                        className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {deleteMutation.isPending
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setIsReportOpen(true);
+                      }}
+                      className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-purple-50 hover:text-purple-700"
+                    >
+                      <Flag
+                        size={15}
+                        aria-hidden="true"
+                      />
+                      Report comment
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* CONTENT */}
-
           {isEditing ? (
-            <div className="mt-2">
-
+            <div className="mt-2 space-y-2">
               <textarea
                 value={content}
-                onChange={(e) =>
-                  setContent(e.target.value)
-                }
+                onChange={(event) => {
+                  setContent(event.target.value);
+                }}
                 rows={3}
-                className="w-full rounded-lg bg-slate-100 p-3 outline-none"
+                maxLength={1000}
+                disabled={updateMutation.isPending}
+                aria-label="Edit comment"
+                className="w-full resize-none rounded-lg border border-gray-200 bg-slate-50 p-3 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:opacity-50"
               />
 
-              <div className="mt-2 flex gap-3 text-xs">
-
+              <div className="flex gap-3 text-xs">
                 <button
                   type="button"
                   onClick={handleUpdate}
                   disabled={
+                    !content.trim() ||
                     updateMutation.isPending
                   }
-                  className="text-blue-500 disabled:opacity-50"
+                  className="cursor-pointer font-medium text-purple-600 transition hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {updateMutation.isPending
                     ? "Updating..."
-                    : "Update"}
+                    : "Save"}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setContent(comment.content);
-                    setIsEditing(false);
-                  }}
-                  className="text-gray-500"
+                  onClick={handleCancelEdit}
+                  disabled={updateMutation.isPending}
+                  className="cursor-pointer text-gray-500 transition hover:text-gray-700 disabled:opacity-50"
                 >
                   Cancel
                 </button>
-
               </div>
 
+              {updateMutation.isError && (
+                <p
+                  role="alert"
+                  className="text-xs text-red-600"
+                >
+                  {updateMutation.error.message}
+                </p>
+              )}
             </div>
           ) : (
-            <p className="mt-2">
+            <p className="mt-2 break-words text-sm text-gray-700">
               {comment.content}
             </p>
           )}
 
-          {/* INTERACTION */}
+          {/* Delete error */}
+          {deleteMutation.isError && (
+            <p
+              role="alert"
+              className="mt-2 text-xs text-red-600"
+            >
+              {deleteMutation.error.message}
+            </p>
+          )}
 
-          <div className="mt-3 flex items-center gap-6 text-xs text-gray-500">
-
-            {/* LIKE */}
-
+          {/* ACTIONS */}
+          <div className="mt-3 flex flex-wrap items-center gap-5 text-xs">
+            {/* Like */}
             <button
               type="button"
               onClick={() => likeMutation.mutate()}
               disabled={likeMutation.isPending}
-              className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label={
+                comment.is_liked
+                  ? "Unlike comment"
+                  : "Like comment"
+              }
+              aria-pressed={comment.is_liked}
+              className={`cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${comment.is_liked
+                  ? "font-medium text-purple-600"
+                  : "text-gray-500 hover:text-purple-600"
+                }`}
             >
-              <Image
-                src="/like.png"
-                alt="Like"
-                width={16}
-                height={16}
-              />
-
-              <span
-                className={
-                  comment.is_liked
-                    ? "text-blue-500"
-                    : "text-gray-500"
-                }
-              >
-                {comment.likes_count} Likes
-              </span>
+              {comment.likes_count} Likes
             </button>
 
-            {/* REPLY */}
-
+            {/* Reply */}
             <button
               type="button"
-              onClick={() =>
-                setShowReplyInput(
-                  !showReplyInput
-                )
-              }
-              className="cursor-pointer text-gray-500 transition-colors hover:text-blue-500"
+              onClick={() => {
+                if (showReplyInput) {
+                  handleCancelReply();
+                } else {
+                  replyMutation.reset();
+                  setShowReplyInput(true);
+                }
+              }}
+              disabled={replyMutation.isPending}
+              className="cursor-pointer text-gray-500 transition-colors hover:text-purple-600 disabled:opacity-50"
             >
               Reply
             </button>
-
           </div>
 
-          {/* REPLY INPUT */}
-
-          {showReplyInput && (
-            <div className="flex flex-1 items-center rounded-xl bg-slate-100 px-4 py-2 text-sm">
-
-              <input
-                ref={(element) => {
-                  replyInputRef.current = element;
-                }}
-                type="text"
-                value={replyContent}
-                onChange={(e) =>
-                  setReplyContent(e.target.value)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleReply();
-                  }
-                }}
-                placeholder="Write a reply..."
-                disabled={replyMutation.isPending}
-                className="flex-1 bg-transparent outline-none disabled:cursor-not-allowed"
-              />
-
-              <EmojiPickerButton
-                onEmojiClick={handleReplyEmojiClick}
-              />
-
-              <button
-                type="button"
-                onClick={handleReply}
-                disabled={
-                  !replyContent.trim() ||
-                  replyMutation.isPending
-                }
-                className="ml-3 text-sm font-medium text-blue-500 transition hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {replyMutation.isPending
-                  ? "Sending..."
-                  : "Send"}
-              </button>
-
-            </div>
+          {/* Like error */}
+          {likeMutation.isError && (
+            <p
+              role="alert"
+              className="mt-2 text-xs text-red-600"
+            >
+              {likeMutation.error.message}
+            </p>
           )}
 
-        </div>
+          {/* REPLY FORM */}
+          {showReplyInput && (
+            <div className="mt-3 space-y-2">
+              <div className="flex min-w-0 items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm">
+                <input
+                  ref={(element) => {
+                    replyInputRef.current = element;
+                  }}
+                  type="text"
+                  value={replyContent}
+                  onChange={(event) => {
+                    setReplyContent(event.target.value);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleReply();
+                    }
+                  }}
+                  maxLength={1000}
+                  placeholder="Write a reply..."
+                  aria-label="Write a reply"
+                  disabled={replyMutation.isPending}
+                  className="min-w-0 flex-1 bg-transparent outline-none disabled:opacity-50"
+                />
 
+                <EmojiPickerButton
+                  onEmojiClick={handleEmojiClick}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleReply}
+                  disabled={
+                    !replyContent.trim() ||
+                    replyMutation.isPending
+                  }
+                  className="cursor-pointer font-medium text-purple-600 transition hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {replyMutation.isPending
+                    ? "Sending..."
+                    : "Send"}
+                </button>
+              </div>
+
+              {replyMutation.isError && (
+                <p
+                  role="alert"
+                  className="text-xs text-red-600"
+                >
+                  {replyMutation.error.message}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* REPLIES */}
+      {/* NESTED REPLIES */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="ml-6 flex flex-col gap-5 border-l border-purple-100 pl-3 sm:ml-10">
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              postId={postId}
+            />
+          ))}
+        </div>
+      )}
 
-      {comment.replies &&
-        comment.replies.length > 0 && (
-          <div className="ml-12 flex flex-col gap-5">
-
-            {comment.replies.map((reply) => (
-              <CommentItem
-                key={reply.id}
-                comment={reply}
-                postId={postId}
-              />
-            ))}
-
-          </div>
-        )}
-
+      {/* REPORT MODAL */}
+      {isReportOpen && (
+        <ReportModal
+          isOpen
+          targetType="comment"
+          targetId={comment.id}
+          onClose={() => setIsReportOpen(false)}
+        />
+      )}
     </div>
   );
-};
-
-export default CommentItem;
-
+}
