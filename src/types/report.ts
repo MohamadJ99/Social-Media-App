@@ -8,8 +8,8 @@ export type ReportReason =
   | "harassment"
   | "hate_speech"
   | "violence"
-  | "nudity"
-  | "misinformation"
+  | "sexual_content"
+  | "false_information"
   | "other";
 
 export type CreateReportPayload = {

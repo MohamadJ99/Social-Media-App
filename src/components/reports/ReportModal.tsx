@@ -24,8 +24,8 @@ const reasons: { value: ReportReason; label: string }[] = [
   { value: "harassment", label: "Harassment or bullying" },
   { value: "hate_speech", label: "Hate speech" },
   { value: "violence", label: "Violence" },
-  { value: "nudity", label: "Nudity or sexual content" },
-  { value: "misinformation", label: "Misinformation" },
+  { value: "sexual_content", label: "Nudity or sexual content" },
+  { value: "false_information", label: "Misinformation" },
   { value: "other", label: "Other" },
 ];
 
