@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ProfileCard from "../profile/ProfileCard";
 import Image from "next/image";
-import Ad from "../common/Ad";
+
 
 
 const menuItems = [
@@ -79,7 +79,6 @@ const LeftMenu = ({ type }: { type: "home" | "profile" }) => {
         ))}
 
       </div>
-      <Ad size="sm" />
     </div>
   );
 };
